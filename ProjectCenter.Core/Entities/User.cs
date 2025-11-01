@@ -1,4 +1,5 @@
-﻿using System;
+﻿using ProjectCenter.Core.ValueObjects;
+using System;
 using System.Collections.Generic;
 
 namespace ProjectCenter.Core.Entities;
@@ -19,9 +20,9 @@ public partial class User
 
     public bool IsAdmin { get; set; }
 
-    public string Phone { get; set; } = null!;
+    public PhoneNumber Phone { get; set; } = null!;
 
-    public string Email { get; set; } = null!;
+    public EmailAddress Email { get; set; } = null!;
 
     public string? Photo { get; set; }
 
