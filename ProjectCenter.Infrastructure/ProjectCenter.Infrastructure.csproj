@@ -9,7 +9,6 @@
   <ItemGroup>
     <Folder Include="Migrations\" />
     <Folder Include="Persistance\Configurations\" />
-    <Folder Include="Persistance\Contexts\" />
     <Folder Include="Persistance\Repositories\" />
     <Folder Include="Persistance\SeedData\" />
     <Folder Include="Persistance\Settings\" />
