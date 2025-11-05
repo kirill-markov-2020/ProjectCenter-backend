@@ -9,8 +9,7 @@ namespace ProjectCenter.Infrastructure.Persistence.Configurations
         public void Configure(EntityTypeBuilder<CollegeBuilding> builder)
         {
             builder.ToTable("CollegeBuilding");
-            builder.HasKey(b => b.Id);
-            builder.Property(b => b.Name).IsRequired().HasMaxLength(50);
+            builder.Property(b => b.Name).HasMaxLength(50).IsRequired();
         }
     }
 }

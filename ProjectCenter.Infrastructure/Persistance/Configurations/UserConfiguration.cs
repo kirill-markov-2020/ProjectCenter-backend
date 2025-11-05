@@ -9,18 +9,25 @@ namespace ProjectCenter.Infrastructure.Persistence.Configurations
         public void Configure(EntityTypeBuilder<User> builder)
         {
             builder.ToTable("User");
-            builder.HasKey(u => u.Id);
 
-            builder.Property(u => u.Surname).IsRequired().HasMaxLength(50);
-            builder.Property(u => u.Name).IsRequired().HasMaxLength(50);
+            builder.Property(u => u.Surname).HasMaxLength(50).IsRequired();
+            builder.Property(u => u.Name).HasMaxLength(50).IsRequired();
             builder.Property(u => u.Patronymic).HasMaxLength(50);
-            builder.Property(u => u.Login).IsRequired().HasMaxLength(50);
-            builder.Property(u => u.Password).IsRequired().HasMaxLength(50);
-            builder.Property(u => u.Phone).IsRequired().HasMaxLength(50);
-            builder.Property(u => u.Email).IsRequired().HasMaxLength(50);
-            builder.Property(u => u.Photo).HasMaxLength(50);
+            builder.Property(u => u.Login).HasMaxLength(50).IsRequired();
+            builder.Property(u => u.Password).HasMaxLength(50).IsRequired();
+            builder.Property(u => u.Phone).HasMaxLength(20).IsRequired();
+            builder.Property(u => u.Email).HasMaxLength(50).IsRequired();
+            builder.Property(u => u.Photo).HasMaxLength(150);
 
-            builder.Property(u => u.IsAdmin).IsRequired();
+            builder.HasOne(u => u.Student)
+                   .WithOne(s => s.User)
+                   .HasForeignKey<Student>(s => s.UserId)
+                   .OnDelete(DeleteBehavior.Cascade);
+
+            builder.HasOne(u => u.Teacher)
+                   .WithOne(t => t.User)
+                   .HasForeignKey<Teacher>(t => t.UserId)
+                   .OnDelete(DeleteBehavior.Cascade);
         }
     }
 }

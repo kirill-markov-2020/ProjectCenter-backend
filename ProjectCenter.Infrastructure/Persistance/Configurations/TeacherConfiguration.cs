@@ -9,14 +9,6 @@ namespace ProjectCenter.Infrastructure.Persistence.Configurations
         public void Configure(EntityTypeBuilder<Teacher> builder)
         {
             builder.ToTable("Teacher");
-            builder.HasKey(t => t.Id);
-
-            builder.Property(t => t.UserId).IsRequired();
-
-            builder.HasOne(t => t.User)
-                   .WithMany()
-                   .HasForeignKey(t => t.UserId)
-                   .OnDelete(DeleteBehavior.Restrict);
         }
     }
 }

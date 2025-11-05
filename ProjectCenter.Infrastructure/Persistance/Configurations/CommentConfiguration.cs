@@ -9,15 +9,12 @@ namespace ProjectCenter.Infrastructure.Persistence.Configurations
         public void Configure(EntityTypeBuilder<Comment> builder)
         {
             builder.ToTable("Comment");
-            builder.HasKey(c => c.Id);
-
-            builder.Property(c => c.Text).IsRequired().HasMaxLength(50);
-            builder.Property(c => c.Date).IsRequired();
+            builder.Property(c => c.Text).HasMaxLength(1000).IsRequired();
 
             builder.HasOne(c => c.User)
-                   .WithMany()
+                   .WithMany(u => u.Comments)
                    .HasForeignKey(c => c.UserId)
-                   .OnDelete(DeleteBehavior.Restrict);
+                   .OnDelete(DeleteBehavior.Cascade);
         }
     }
 }

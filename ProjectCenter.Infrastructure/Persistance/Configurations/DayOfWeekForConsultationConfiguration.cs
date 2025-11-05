@@ -9,8 +9,7 @@ namespace ProjectCenter.Infrastructure.Persistence.Configurations
         public void Configure(EntityTypeBuilder<DayOfWeekForConsultation> builder)
         {
             builder.ToTable("DayOfWeekForConsultation");
-            builder.HasKey(d => d.Id);
-            builder.Property(d => d.Name).IsRequired().HasMaxLength(10);
+            builder.Property(d => d.Name).HasMaxLength(50).IsRequired();
         }
     }
 }

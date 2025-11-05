@@ -9,41 +9,38 @@ namespace ProjectCenter.Infrastructure.Persistence.Configurations
         public void Configure(EntityTypeBuilder<Project> builder)
         {
             builder.ToTable("Project");
-            builder.HasKey(p => p.Id);
 
-            builder.Property(p => p.Title).IsRequired().HasMaxLength(50);
-            builder.Property(p => p.FileProject).IsRequired().HasMaxLength(50);
-            builder.Property(p => p.FileDocumentation).IsRequired().HasMaxLength(50);
-            builder.Property(p => p.DateDeadline).IsRequired();
-            builder.Property(p => p.CreatedDate).IsRequired();
+            builder.Property(p => p.Title).HasMaxLength(500).IsRequired();
+            builder.Property(p => p.FileProject).HasMaxLength(500);
+            builder.Property(p => p.FileDocumentation).HasMaxLength(500);
 
             builder.HasOne(p => p.Student)
-                   .WithMany()
-                   .HasForeignKey(p => p.StudentId)
-                   .OnDelete(DeleteBehavior.Restrict);
+                    .WithMany(s => s.Projects)
+                    .HasForeignKey(p => p.StudentId)
+                    .OnDelete(DeleteBehavior.Restrict);
 
             builder.HasOne(p => p.Teacher)
-                   .WithMany()
+                   .WithMany(t => t.Projects)
                    .HasForeignKey(p => p.TeacherId)
                    .OnDelete(DeleteBehavior.Restrict);
 
             builder.HasOne(p => p.Status)
-                   .WithMany()
+                   .WithMany(s => s.Projects)
                    .HasForeignKey(p => p.StatusId)
                    .OnDelete(DeleteBehavior.Restrict);
 
             builder.HasOne(p => p.Type)
-                   .WithMany()
+                   .WithMany(t => t.Projects)
                    .HasForeignKey(p => p.TypeId)
                    .OnDelete(DeleteBehavior.Restrict);
 
             builder.HasOne(p => p.Subject)
-                   .WithMany()
+                   .WithMany(s => s.Projects)
                    .HasForeignKey(p => p.SubjectId)
                    .OnDelete(DeleteBehavior.Restrict);
 
             builder.HasOne(p => p.Comment)
-                   .WithMany()
+                   .WithMany(c => c.Projects)
                    .HasForeignKey(p => p.CommentId)
                    .OnDelete(DeleteBehavior.SetNull);
         }

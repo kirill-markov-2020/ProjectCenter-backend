@@ -9,17 +9,15 @@ namespace ProjectCenter.Infrastructure.Persistence.Configurations
         public void Configure(EntityTypeBuilder<Notification> builder)
         {
             builder.ToTable("Notification");
-            builder.HasKey(n => n.Id);
-
-            builder.Property(n => n.Text).IsRequired().HasMaxLength(50);
+            builder.Property(n => n.Text).HasMaxLength(1000).IsRequired();
 
             builder.HasOne(n => n.Sender)
-                   .WithMany()
+                   .WithMany(u => u.SentNotifications)
                    .HasForeignKey(n => n.SenderId)
                    .OnDelete(DeleteBehavior.Restrict);
 
             builder.HasOne(n => n.Recipient)
-                   .WithMany()
+                   .WithMany(u => u.ReceivedNotifications)
                    .HasForeignKey(n => n.RecipientId)
                    .OnDelete(DeleteBehavior.Restrict);
         }

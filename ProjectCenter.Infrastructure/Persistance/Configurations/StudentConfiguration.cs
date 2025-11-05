@@ -9,24 +9,14 @@ namespace ProjectCenter.Infrastructure.Persistence.Configurations
         public void Configure(EntityTypeBuilder<Student> builder)
         {
             builder.ToTable("Student");
-            builder.HasKey(s => s.Id);
-
-            builder.Property(s => s.UserId).IsRequired();
-            builder.Property(s => s.GroupId).IsRequired();
-            builder.Property(s => s.TeacherId).IsRequired();
-
-            builder.HasOne(s => s.User)
-                   .WithMany()
-                   .HasForeignKey(s => s.UserId)
-                   .OnDelete(DeleteBehavior.Restrict);
 
             builder.HasOne(s => s.Group)
-                   .WithMany()
+                   .WithMany(g => g.Students)
                    .HasForeignKey(s => s.GroupId)
                    .OnDelete(DeleteBehavior.Restrict);
 
             builder.HasOne(s => s.Teacher)
-                   .WithMany()
+                   .WithMany(t => t.Students)
                    .HasForeignKey(s => s.TeacherId)
                    .OnDelete(DeleteBehavior.Restrict);
         }
