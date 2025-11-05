@@ -20,7 +20,7 @@ namespace ProjectCenter.Infrastructure.Services
         public string GenerateToken(User user)
         {
             var key = Encoding.UTF8.GetBytes(_configuration["Jwt:Key"]);
-
+            int expireMinutes = int.Parse(_configuration["Jwt:ExpireMinutes"] ?? "60");
             var claims = new[]
             {
                 new Claim(ClaimTypes.NameIdentifier, user.Id.ToString()),
@@ -33,7 +33,7 @@ namespace ProjectCenter.Infrastructure.Services
                 issuer: _configuration["Jwt:Issuer"],
                 audience: _configuration["Jwt:Audience"],
                 claims: claims,
-                expires: DateTime.UtcNow.AddHours(1),
+                expires: DateTime.UtcNow.AddMinutes(expireMinutes),
                 signingCredentials: new SigningCredentials(new SymmetricSecurityKey(key), SecurityAlgorithms.HmacSha256)
             );
 
