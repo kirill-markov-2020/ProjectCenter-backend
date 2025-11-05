@@ -1,29 +1,23 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using ProjectCenter.Application.Interfaces;
 using ProjectCenter.Application.DTOs.Auth;
-using ProjectCenter.Application.Interfaces;
 using ProjectCenter.Core.Entities;
-using ProjectCenter.Infrastructure.Persistance.Contexts;
-using ProjectCenter.Infrastructure.Services;
-using System;
 
 namespace ProjectCenter.Application.Services
 {
     public class AuthService : IAuthService
     {
-        private readonly AppDbContext _context;
-        private readonly JwtService _jwtService;
+        private readonly IAuthRepository _repository;
+        private readonly IJwtService _jwtService;
 
-        public AuthService(AppDbContext context, JwtService jwtService)
+        public AuthService(IAuthRepository repository, IJwtService jwtService)
         {
-            _context = context;
+            _repository = repository;
             _jwtService = jwtService;
         }
 
         public async Task<LoginResponseDto> LoginAsync(LoginRequestDto request)
         {
-            var user = await _context.Users
-                .FirstOrDefaultAsync(u => u.Login == request.Login && u.Password == request.Password);
-
+            var user = await _repository.GetUserByLoginAndPasswordAsync(request.Login, request.Password);
             if (user == null)
                 throw new UnauthorizedAccessException("Неверный логин или пароль");
 
