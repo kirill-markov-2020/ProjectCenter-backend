@@ -21,7 +21,6 @@ namespace ProjectCenter.Infrastructure.Services
         {
             var key = Encoding.UTF8.GetBytes(_configuration["Jwt:Key"]);
 
-            // ✅ Добавляем NameIdentifier, чтобы ProjectsController смог получить userId
             var claims = new[]
             {
                 new Claim(ClaimTypes.NameIdentifier, user.Id.ToString()),

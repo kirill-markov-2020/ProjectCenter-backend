@@ -14,11 +14,9 @@ using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// ==================== DbContext ====================
 builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 
-// ==================== JWT Authentication ====================
 var key = Encoding.UTF8.GetBytes(builder.Configuration["Jwt:Key"]);
 
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
@@ -36,7 +34,6 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
         };
     });
 
-// ==================== Application / Infrastructure Services ====================
 builder.Services.AddScoped<JwtService>();
 builder.Services.AddScoped<IJwtService, JwtService>();
 builder.Services.AddScoped<IAuthRepository, AuthRepository>();
@@ -44,13 +41,11 @@ builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<IProjectRepository, ProjectRepository>();
 builder.Services.AddScoped<IProjectService, ProjectService>();
 
-// ==================== AutoMapper ====================
 builder.Services.AddAutoMapper(cfg =>
 {
     cfg.AddProfile<MappingProfile>();
 });
 
-// ==================== Controllers & Swagger ====================
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
@@ -82,12 +77,10 @@ builder.Services.AddSwaggerGen(c =>
 });
 
 
-// ==================== Build Application ====================
 var app = builder.Build();
 
-// ==================== Middleware ====================
 app.UseSwagger();
-app.UseSwaggerUI(); // Swagger будет доступен по умолчанию на /swagger
+app.UseSwaggerUI(); 
 
 app.UseAuthentication();
 app.UseAuthorization();

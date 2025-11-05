@@ -14,7 +14,6 @@ namespace ProjectCenter.Infrastructure.Persistence.Repositories
             _context = context;
         }
 
-        // Все проекты для админа
         public async Task<List<Project>> GetAllProjectsAsync()
         {
             return await _context.Projects
@@ -29,7 +28,6 @@ namespace ProjectCenter.Infrastructure.Persistence.Repositories
                 .ToListAsync();
         }
 
-        // Только публичные проекты для студентов/преподавателей
         public async Task<List<Project>> GetPublicProjectsAsync()
         {
             return await _context.Projects
