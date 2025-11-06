@@ -25,6 +25,7 @@ namespace ProjectCenter.Infrastructure.Persistence.Repositories
                 .Include(p => p.Type)
                 .Include(p => p.Subject)
                 .Include(p => p.Comments)
+                    .ThenInclude(c => c.User)
                 .ToListAsync();
         }
 
@@ -40,6 +41,7 @@ namespace ProjectCenter.Infrastructure.Persistence.Repositories
                 .Include(p => p.Type)
                 .Include(p => p.Subject)
                 .Include(p => p.Comments)
+                    .ThenInclude(c => c.User)
                 .ToListAsync();
         }
 
@@ -54,6 +56,7 @@ namespace ProjectCenter.Infrastructure.Persistence.Repositories
                 .Include(p => p.Type)
                 .Include(p => p.Subject)
                 .Include(p => p.Comments)
+                    .ThenInclude(c => c.User)
                 .FirstOrDefaultAsync(p => p.Id == id);
         }
     }

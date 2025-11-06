@@ -12,5 +12,7 @@
         public bool IsPublic { get; set; }
         public DateTime DateDeadline { get; set; }
         public DateTime CreatedDate { get; set; }
+
+        public List<CommentDto> Comments { get; set; } = new();
     }
 }

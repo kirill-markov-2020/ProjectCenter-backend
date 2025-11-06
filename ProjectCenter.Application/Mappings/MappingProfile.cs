@@ -1,7 +1,6 @@
 ﻿using AutoMapper;
 using ProjectCenter.Application.DTOs;
 using ProjectCenter.Core.Entities;
-using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace ProjectCenter.Application.Mappings
 {
@@ -14,7 +13,14 @@ namespace ProjectCenter.Application.Mappings
                 .ForMember(dest => dest.TeacherName, opt => opt.MapFrom(src => src.Teacher.User.Name))
                 .ForMember(dest => dest.StatusName, opt => opt.MapFrom(src => src.Status.Name))
                 .ForMember(dest => dest.TypeName, opt => opt.MapFrom(src => src.Type.Name))
-                .ForMember(dest => dest.SubjectName, opt => opt.MapFrom(src => src.Subject.Name));
+                .ForMember(dest => dest.SubjectName, opt => opt.MapFrom(src => src.Subject.Name))
+                .ForMember(dest => dest.Comments, opt => opt.MapFrom(src => src.Comments));
+
+            CreateMap<Comment, CommentDto>()
+                .ForMember(dest => dest.UserFullName,
+                           opt => opt.MapFrom(src => $"{src.User.Surname} {src.User.Name}"))
+                .ForMember(dest => dest.Text, opt => opt.MapFrom(src => src.Text))
+                .ForMember(dest => dest.Date, opt => opt.MapFrom(src => src.Date));
         }
     }
 }
