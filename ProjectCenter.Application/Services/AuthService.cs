@@ -15,20 +15,33 @@ namespace ProjectCenter.Application.Services
             _jwtService = jwtService;
         }
 
-        public async Task<LoginResponseDto> LoginAsync(LoginRequestDto request)
+        public async Task<LoginResponseDto> LoginAsync(LoginRequestDto dto)
         {
-            var user = await _repository.GetUserByLoginAndPasswordAsync(request.Login, request.Password);
+            var user = await _repository.GetUserByLoginAndPasswordAsync(dto.Login, dto.Password);
+
             if (user == null)
-                throw new UnauthorizedAccessException("Неверный логин или пароль");
+                throw new UnauthorizedAccessException("Неверный логин или пароль.");
 
             var token = _jwtService.GenerateToken(user);
+
+            // Определяем роль логически
+            string role;
+            if (user.IsAdmin)
+                role = "Admin";
+            else if (user.Teacher != null)
+                role = "Teacher";
+            else if (user.Student != null)
+                role = "Student";
+            else
+                role = "User";
 
             return new LoginResponseDto
             {
                 Token = token,
-                Role = user.IsAdmin ? "Admin" : "User",
+                Role = role,
                 FullName = $"{user.Surname} {user.Name}"
             };
         }
+
     }
 }

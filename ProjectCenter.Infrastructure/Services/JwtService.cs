@@ -20,24 +20,35 @@ namespace ProjectCenter.Infrastructure.Services
         public string GenerateToken(User user)
         {
             var key = Encoding.UTF8.GetBytes(_configuration["Jwt:Key"]);
-            int expireMinutes = int.Parse(_configuration["Jwt:ExpireMinutes"] ?? "60");
+
+            string role;
+
+            if (user.IsAdmin)
+                role = "Admin";
+            else if (user.Teacher != null)
+                role = "Teacher";
+            else if (user.Student != null)
+                role = "Student";
+            else
+                role = "User"; // fallback
+
             var claims = new[]
             {
-                new Claim(ClaimTypes.NameIdentifier, user.Id.ToString()),
-                new Claim(ClaimTypes.Name, user.Login),
-                new Claim(ClaimTypes.Role, user.IsAdmin ? "Admin" : "User"),
-                new Claim("IsAdmin", user.IsAdmin.ToString())
-            };
+        new Claim(ClaimTypes.NameIdentifier, user.Id.ToString()),
+        new Claim(ClaimTypes.Name, user.Login),
+        new Claim(ClaimTypes.Role, role)
+    };
 
             var token = new JwtSecurityToken(
                 issuer: _configuration["Jwt:Issuer"],
                 audience: _configuration["Jwt:Audience"],
                 claims: claims,
-                expires: DateTime.UtcNow.AddMinutes(expireMinutes),
+                expires: DateTime.UtcNow.AddHours(1),
                 signingCredentials: new SigningCredentials(new SymmetricSecurityKey(key), SecurityAlgorithms.HmacSha256)
             );
 
             return new JwtSecurityTokenHandler().WriteToken(token);
         }
+
     }
 }

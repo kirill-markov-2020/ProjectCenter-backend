@@ -16,7 +16,11 @@ namespace ProjectCenter.Infrastructure.Persistence.Repositories
 
         public async Task<User?> GetUserByLoginAndPasswordAsync(string login, string password)
         {
-            return await _context.Users.FirstOrDefaultAsync(u => u.Login == login && u.Password == password);
+            return await _context.Users
+                .Include(u => u.Teacher)
+                .Include(u => u.Student)
+                .FirstOrDefaultAsync(u => u.Login == login && u.Password == password);
         }
+
     }
 }
