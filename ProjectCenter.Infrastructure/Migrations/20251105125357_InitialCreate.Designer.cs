@@ -5,7 +5,7 @@ using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
 using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
-using ProjectCenter.Infrastructure.Persistance.Contexts;
+using ProjectCenter.Infrastructure.Persistence.Contexts;
 
 #nullable disable
 

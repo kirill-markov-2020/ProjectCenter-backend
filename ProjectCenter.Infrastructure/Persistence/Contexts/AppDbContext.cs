@@ -6,7 +6,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace ProjectCenter.Infrastructure.Persistance.Contexts
+namespace ProjectCenter.Infrastructure.Persistence.Contexts
 {
     public class AppDbContext : DbContext
     {

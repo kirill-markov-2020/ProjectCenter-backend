@@ -1,7 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using ProjectCenter.Application.Interfaces;
 using ProjectCenter.Core.Entities;
-using ProjectCenter.Infrastructure.Persistance.Contexts;
+using ProjectCenter.Infrastructure.Persistence.Contexts;
 
 namespace ProjectCenter.Infrastructure.Persistence.Repositories
 {
@@ -24,7 +24,7 @@ namespace ProjectCenter.Infrastructure.Persistence.Repositories
                 .Include(p => p.Status)
                 .Include(p => p.Type)
                 .Include(p => p.Subject)
-                .Include(p => p.Comment)
+                .Include(p => p.Comments)
                 .ToListAsync();
         }
 
@@ -39,7 +39,7 @@ namespace ProjectCenter.Infrastructure.Persistence.Repositories
                 .Include(p => p.Status)
                 .Include(p => p.Type)
                 .Include(p => p.Subject)
-                .Include(p => p.Comment)
+                .Include(p => p.Comments)
                 .ToListAsync();
         }
 
@@ -53,7 +53,7 @@ namespace ProjectCenter.Infrastructure.Persistence.Repositories
                 .Include(p => p.Status)
                 .Include(p => p.Type)
                 .Include(p => p.Subject)
-                .Include(p => p.Comment)
+                .Include(p => p.Comments)
                 .FirstOrDefaultAsync(p => p.Id == id);
         }
     }

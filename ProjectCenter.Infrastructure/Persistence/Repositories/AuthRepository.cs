@@ -1,9 +1,9 @@
 ﻿using ProjectCenter.Application.Interfaces;
 using ProjectCenter.Core.Entities;
-using ProjectCenter.Infrastructure.Persistance.Contexts;
+using ProjectCenter.Infrastructure.Persistence.Contexts;
 using Microsoft.EntityFrameworkCore;
 
-namespace ProjectCenter.Infrastructure.Repositories
+namespace ProjectCenter.Infrastructure.Persistence.Repositories
 {
     public class AuthRepository : IAuthRepository
     {

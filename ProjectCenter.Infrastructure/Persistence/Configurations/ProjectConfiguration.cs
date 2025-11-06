@@ -10,14 +10,20 @@ namespace ProjectCenter.Infrastructure.Persistence.Configurations
         {
             builder.ToTable("Project");
 
-            builder.Property(p => p.Title).HasMaxLength(500).IsRequired();
-            builder.Property(p => p.FileProject).HasMaxLength(500);
-            builder.Property(p => p.FileDocumentation).HasMaxLength(500);
+            builder.Property(p => p.Title)
+                   .HasMaxLength(500)
+                   .IsRequired();
+
+            builder.Property(p => p.FileProject)
+                   .HasMaxLength(500);
+
+            builder.Property(p => p.FileDocumentation)
+                   .HasMaxLength(500);
 
             builder.HasOne(p => p.Student)
-                    .WithMany(s => s.Projects)
-                    .HasForeignKey(p => p.StudentId)
-                    .OnDelete(DeleteBehavior.Restrict);
+                   .WithMany(s => s.Projects)
+                   .HasForeignKey(p => p.StudentId)
+                   .OnDelete(DeleteBehavior.Restrict);
 
             builder.HasOne(p => p.Teacher)
                    .WithMany(t => t.Projects)
@@ -39,10 +45,10 @@ namespace ProjectCenter.Infrastructure.Persistence.Configurations
                    .HasForeignKey(p => p.SubjectId)
                    .OnDelete(DeleteBehavior.Restrict);
 
-            builder.HasOne(p => p.Comment)
-                   .WithMany(c => c.Projects)
-                   .HasForeignKey(p => p.CommentId)
-                   .OnDelete(DeleteBehavior.SetNull);
+            builder.HasMany(p => p.Comments)
+                   .WithOne(c => c.Project)
+                   .HasForeignKey(c => c.ProjectId)
+                   .OnDelete(DeleteBehavior.Cascade);
         }
     }
 }
