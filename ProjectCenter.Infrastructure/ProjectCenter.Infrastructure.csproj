@@ -8,12 +8,20 @@
 
   <ItemGroup>
     <Folder Include="Migrations\" />
-    <Folder Include="Persistance\Configurations\" />
-    <Folder Include="Persistance\Contexts\" />
-    <Folder Include="Persistance\Repositories\" />
-    <Folder Include="Persistance\SeedData\" />
-    <Folder Include="Persistance\Settings\" />
-    <Folder Include="Services\" />
+    <Folder Include="Persistence\SeedData\" />
+    <Folder Include="Persistence\Settings\" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.EntityFrameworkCore" Version="9.0.10" />
+    <PackageReference Include="Swashbuckle.AspNetCore.Swagger" Version="9.0.6" />
+    <PackageReference Include="Swashbuckle.AspNetCore.SwaggerGen" Version="9.0.6" />
+    <PackageReference Include="Swashbuckle.AspNetCore.SwaggerUI" Version="9.0.6" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\ProjectCenter.Application\ProjectCenter.Application.csproj" />
+    <ProjectReference Include="..\ProjectCenter.Core\ProjectCenter.Core.csproj" />
   </ItemGroup>
 
 </Project>
