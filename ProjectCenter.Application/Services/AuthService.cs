@@ -24,7 +24,6 @@ namespace ProjectCenter.Application.Services
 
             var token = _jwtService.GenerateToken(user);
 
-            // Определяем роль логически
             string role;
             if (user.IsAdmin)
                 role = "Admin";

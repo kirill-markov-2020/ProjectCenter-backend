@@ -20,17 +20,17 @@ namespace ProjectCenter.Api.Controllers
         [HttpGet]
         public async Task<IActionResult> GetProjects()
         {
-            var userIdClaim = User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)?.Value;
-            if (userIdClaim == null)
+            if (!HttpContext.Items.ContainsKey("UserId"))
                 return Unauthorized();
 
-            var isAdminClaim = User.Claims.FirstOrDefault(c => c.Type == "IsAdmin")?.Value;
-            bool isAdmin = isAdminClaim != null && bool.Parse(isAdminClaim);
+            int userId = (int)HttpContext.Items["UserId"];
+            string role = HttpContext.Items["UserRole"]?.ToString() ?? "User";
 
-            int userId = int.Parse(userIdClaim);
+            bool isAdmin = role == "Admin";
 
             var projects = await _projectService.GetProjectsForUserAsync(userId, isAdmin);
             return Ok(projects);
         }
+
     }
 }
