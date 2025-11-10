@@ -9,5 +9,6 @@ namespace ProjectCenter.Application.Interfaces
         Task AddStudentAsync(Student student);
         Task<bool> LoginExistsAsync(string login);
         Task<bool> EmailExistsAsync(string email);
+        Task<List<User>> GetAllAsync();
     }
 }

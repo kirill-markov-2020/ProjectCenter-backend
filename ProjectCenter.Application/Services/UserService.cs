@@ -107,5 +107,25 @@ namespace ProjectCenter.Application.Services
                 Role = roleNormalized
             };
         }
+        public async Task<List<UserDto>> GetAllUsersAsync()
+        {
+            var users = await _userRepository.GetAllAsync();
+
+            var result = users.Select(u => new UserDto
+            {
+                Id = u.Id,
+                FullName = $"{u.Surname} {u.Name} {u.Patronymic}".Trim(),
+                Login = u.Login,
+                Email = u.Email,
+                Phone = u.Phone,
+                Role = u.IsAdmin ? "Admin"
+                     : u.Teacher != null ? "Teacher"
+                     : u.Student != null ? "Student"
+                     : "User"
+            }).ToList();
+
+            return result;
+        }
+
     }
 }

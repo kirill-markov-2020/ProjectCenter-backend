@@ -41,5 +41,13 @@ namespace ProjectCenter.Infrastructure.Persistence.Repositories
         {
             return await _context.Users.AnyAsync(u => u.Email == email);
         }
+        public async Task<List<User>> GetAllAsync()
+        {
+            return await _context.Users
+                .Include(u => u.Teacher)
+                .Include(u => u.Student)
+                .ToListAsync();
+        }
+
     }
 }
