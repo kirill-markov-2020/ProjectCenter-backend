@@ -121,11 +121,16 @@ namespace ProjectCenter.Application.Services
                 Role = u.IsAdmin ? "Admin"
                      : u.Teacher != null ? "Teacher"
                      : u.Student != null ? "Student"
-                     : "User"
+                     : "User",
+                GroupName = u.Student?.Group?.Name,
+                CuratorName = u.Student?.Teacher != null
+                    ? $"{u.Student.Teacher.User.Surname} {u.Student.Teacher.User.Name} {u.Student.Teacher.User.Patronymic}".Trim()
+                    : null
             }).ToList();
 
             return result;
         }
+
 
     }
 }

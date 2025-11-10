@@ -46,8 +46,12 @@ namespace ProjectCenter.Infrastructure.Persistence.Repositories
             return await _context.Users
                 .Include(u => u.Teacher)
                 .Include(u => u.Student)
+                    .ThenInclude(s => s.Group)
+                .Include(u => u.Student)
+                    .ThenInclude(g => g.Teacher)
                 .ToListAsync();
         }
+
 
     }
 }
