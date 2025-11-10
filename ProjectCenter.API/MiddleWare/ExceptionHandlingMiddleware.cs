@@ -1,17 +1,18 @@
-﻿using System.Net;
-using System.Text.Json;
+﻿using Microsoft.AspNetCore.Http;
+using ProjectCenter.Core.Exceptions;
+using System;
+using System.Net;
+using System.Threading.Tasks;
 
 namespace ProjectCenter.API.Middleware
 {
     public class ExceptionHandlingMiddleware
     {
         private readonly RequestDelegate _next;
-        private readonly ILogger<ExceptionHandlingMiddleware> _logger;
 
-        public ExceptionHandlingMiddleware(RequestDelegate next, ILogger<ExceptionHandlingMiddleware> logger)
+        public ExceptionHandlingMiddleware(RequestDelegate next)
         {
             _next = next;
-            _logger = logger;
         }
 
         public async Task InvokeAsync(HttpContext context)
@@ -20,10 +21,9 @@ namespace ProjectCenter.API.Middleware
             {
                 await _next(context);
             }
-            catch (Exception ex)
+            catch (Exception exception)
             {
-                _logger.LogError(ex, ex.Message);
-                await HandleExceptionAsync(context, ex);
+                await HandleExceptionAsync(context, exception);
             }
         }
 
@@ -31,29 +31,43 @@ namespace ProjectCenter.API.Middleware
         {
             context.Response.ContentType = "application/json";
 
-            HttpStatusCode statusCode = HttpStatusCode.InternalServerError;
-            string message = "Произошла внутренняя ошибка сервера.";
-
-            if (exception is UnauthorizedAccessException)
+            switch (exception)
             {
-                statusCode = HttpStatusCode.Unauthorized;
-                message = exception.Message;
+                case InvalidRoleException ex:
+                    context.Response.StatusCode = (int)HttpStatusCode.BadRequest;
+                    await context.Response.WriteAsJsonAsync(new { error = ex.Message, statusCode = 400 });
+                    break;
+
+                case InvalidPhoneNumberException ex:
+                    context.Response.StatusCode = (int)HttpStatusCode.BadRequest;
+                    await context.Response.WriteAsJsonAsync(new { error = ex.Message, statusCode = 400 });
+                    break;
+
+                case InvalidEmailException ex:
+                    context.Response.StatusCode = (int)HttpStatusCode.BadRequest;
+                    await context.Response.WriteAsJsonAsync(new { error = ex.Message, statusCode = 400 });
+                    break;
+
+                case InvalidPasswordException ex:
+                    context.Response.StatusCode = (int)HttpStatusCode.BadRequest;
+                    await context.Response.WriteAsJsonAsync(new { error = ex.Message, statusCode = 400 });
+                    break;
+
+                case InvalidStudentDataException ex:
+                    context.Response.StatusCode = (int)HttpStatusCode.BadRequest;
+                    await context.Response.WriteAsJsonAsync(new { error = ex.Message, statusCode = 400 });
+                    break;
+
+                case ArgumentException ex:
+                    context.Response.StatusCode = (int)HttpStatusCode.BadRequest;
+                    await context.Response.WriteAsJsonAsync(new { error = ex.Message, statusCode = 400 });
+                    break;
+
+                default:
+                    context.Response.StatusCode = (int)HttpStatusCode.InternalServerError;
+                    await context.Response.WriteAsJsonAsync(new { error = "Произошла внутренняя ошибка сервера.", statusCode = 500 });
+                    break;
             }
-            else if (exception is ArgumentException)
-            {
-                statusCode = HttpStatusCode.BadRequest;
-                message = exception.Message;
-            }
-
-            context.Response.StatusCode = (int)statusCode;
-
-            var response = new
-            {
-                status = (int)statusCode,
-                error = message
-            };
-
-            await context.Response.WriteAsync(JsonSerializer.Serialize(response));
         }
     }
 }

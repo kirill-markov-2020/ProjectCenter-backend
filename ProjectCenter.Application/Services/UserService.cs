@@ -4,7 +4,11 @@ using ProjectCenter.Application.DTOs;
 using ProjectCenter.Application.DTOs.CreateUser;
 using ProjectCenter.Application.Interfaces;
 using ProjectCenter.Core.Entities;
+using ProjectCenter.Core.Exceptions;
+using ProjectCenter.Core.ValueObjects;
 using System;
+using System.Threading.Tasks;
+using System.Linq;
 
 namespace ProjectCenter.Application.Services
 {
@@ -27,16 +31,40 @@ namespace ProjectCenter.Application.Services
             if (string.IsNullOrEmpty(roleNormalized))
                 throw new ArgumentException("Role is required.");
 
-            // Проверка уникальности логина/email
+            var validRoles = new[] { "Admin", "Teacher", "Student" };
+            if (!validRoles.Any(r => roleNormalized.Equals(r, StringComparison.OrdinalIgnoreCase)))
+                throw new InvalidRoleException($"Недопустимая роль: {dto.Role}. Разрешены только Admin, Teacher, Student.");
+
+            if (!PhoneValidator.IsValid(dto.Phone))
+                throw new InvalidPhoneNumberException("Некорректный формат телефона. Используйте формат +7XXXXXXXXXX или 8XXXXXXXXXX.");
+
+            var emailErrors = EmailValidator.Validate(dto.Email);
+            if (emailErrors.Any())
+                throw new InvalidEmailException(string.Join(" ", emailErrors));
+
+            var passwordErrors = PasswordValidator.Validate(dto.Password);
+            if (passwordErrors.Any())
+                throw new InvalidPasswordException(string.Join(" ", passwordErrors));
+
             if (await _userRepository.LoginExistsAsync(dto.Login))
-                throw new ArgumentException("Login already exists.");
+                throw new ArgumentException("Такой логин уже занят");
 
             if (await _userRepository.EmailExistsAsync(dto.Email))
-                throw new ArgumentException("Email already exists.");
+                throw new ArgumentException("Такой Email уже занят");
 
-            // Хэшируем пароль
+            if (roleNormalized.Equals("Student", StringComparison.OrdinalIgnoreCase))
+            {
+                if (!dto.GroupId.HasValue || !dto.TeacherId.HasValue)
+                    throw new InvalidStudentDataException("Для роли 'Student' необходимо указать GroupId и TeacherId.");
+            }
+            else
+            {
+                if ((dto.GroupId.HasValue && dto.GroupId.Value != 0) || (dto.TeacherId.HasValue && dto.TeacherId.Value != 0))
+                    throw new InvalidStudentDataException("GroupId и TeacherId можно указывать только для роли 'Student'.");
+            }
+
             var hashed = BCrypt.Net.BCrypt.HashPassword(dto.Password);
-            
+
             var user = new User
             {
                 Surname = dto.Surname,
@@ -50,10 +78,8 @@ namespace ProjectCenter.Application.Services
                 IsAdmin = roleNormalized.Equals("Admin", StringComparison.OrdinalIgnoreCase)
             };
 
-            // Сохраняем пользователя первым — чтобы получить Id
             await _userRepository.AddUserAsync(user);
 
-            // В зависимости от роли — создаём дополнительные записи
             if (roleNormalized.Equals("Teacher", StringComparison.OrdinalIgnoreCase))
             {
                 var teacher = new Teacher
@@ -65,14 +91,11 @@ namespace ProjectCenter.Application.Services
             }
             else if (roleNormalized.Equals("Student", StringComparison.OrdinalIgnoreCase))
             {
-                if (!dto.GroupId.HasValue || !dto.TeacherId.HasValue)
-                    throw new ArgumentException("GroupId and TeacherId are required for role 'Student'.");
-
                 var student = new Student
                 {
                     UserId = user.Id,
-                    GroupId = dto.GroupId.Value,
-                    TeacherId = dto.TeacherId.Value
+                    GroupId = dto.GroupId!.Value,
+                    TeacherId = dto.TeacherId!.Value
                 };
 
                 await _userRepository.AddStudentAsync(student);

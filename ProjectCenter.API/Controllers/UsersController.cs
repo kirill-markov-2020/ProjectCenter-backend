@@ -18,7 +18,7 @@ namespace ProjectCenter.Api.Controllers
             _userService = userService;
         }
 
-        // POST api/users
+
         [HttpPost]
         public async Task<IActionResult> CreateUser([FromBody] CreateUserRequestDto dto)
         {

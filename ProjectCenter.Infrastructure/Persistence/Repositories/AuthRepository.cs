@@ -24,7 +24,6 @@ namespace ProjectCenter.Infrastructure.Persistence.Repositories
             if (user == null)
                 return null;
 
-            // Проверяем хэшированный пароль
             if (BCrypt.Net.BCrypt.Verify(password, user.Password))
                 return user;
 
