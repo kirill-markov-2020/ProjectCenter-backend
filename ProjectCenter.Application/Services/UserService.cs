@@ -133,19 +133,24 @@ namespace ProjectCenter.Application.Services
         public async Task DeleteUserAsync(int id)
         {
             var user = await _userRepository.GetByIdAsync(id);
-
             if (user == null)
-                throw new UserNotFoundException(id);
+                throw new ArgumentException("Пользователь не найден.");
 
-            if (user.IsAdmin)
-                throw new InvalidOperationException("Нельзя удалить администратора.");
-
-            // Удаление связанных сущностей
-            if (user.Student != null)
-                await _userRepository.DeleteStudentAsync(user.Student);
-
+            // Если это преподаватель — проверяем, есть ли студенты
             if (user.Teacher != null)
+            {
+                var students = await _userRepository.GetAllAsync();
+                bool hasStudents = students.Any(s => s.Student != null && s.Student.TeacherId == user.Teacher.Id);
+
+                if (hasStudents)
+                    throw new TeacherHasStudentsException();
+
                 await _userRepository.DeleteTeacherAsync(user.Teacher);
+            }
+            else if (user.Student != null)
+            {
+                await _userRepository.DeleteStudentAsync(user.Student);
+            }
 
             await _userRepository.DeleteUserAsync(user);
         }

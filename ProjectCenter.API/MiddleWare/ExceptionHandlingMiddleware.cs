@@ -70,7 +70,12 @@ namespace ProjectCenter.API.Middleware
                     context.Response.StatusCode = (int)HttpStatusCode.BadRequest;
                     await context.Response.WriteAsJsonAsync(new { error = ex.Message, statusCode = 400 });
                     break;
-                
+                case TeacherHasStudentsException ex:
+                    context.Response.StatusCode = (int)HttpStatusCode.BadRequest;
+                    await context.Response.WriteAsJsonAsync(new { error = ex.Message, statusCode = 400 });
+                    break;
+
+
 
 
                 default:
