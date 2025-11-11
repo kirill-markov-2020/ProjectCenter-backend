@@ -1,9 +1,11 @@
 ﻿using AutoMapper;
 using Microsoft.EntityFrameworkCore;
 using ProjectCenter.API.Extensions;
+using ProjectCenter.API.Middleware;
 using ProjectCenter.Application.Interfaces;
 using ProjectCenter.Application.Mappings;
 using ProjectCenter.Application.Services;
+using ProjectCenter.Core.Entities;
 using ProjectCenter.Infrastructure.Persistence.Contexts;
 using ProjectCenter.Infrastructure.Persistence.Repositories;
 using ProjectCenter.Infrastructure.Services;
@@ -20,6 +22,9 @@ builder.Services.AddScoped<IAuthRepository, AuthRepository>();
 builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<IProjectRepository, ProjectRepository>();
 builder.Services.AddScoped<IProjectService, ProjectService>();
+builder.Services.AddScoped<IUserRepository, UserRepository>();
+builder.Services.AddScoped<IUserService, UserService>();
+
 
 builder.Services.AddAutoMapper(cfg =>
 {

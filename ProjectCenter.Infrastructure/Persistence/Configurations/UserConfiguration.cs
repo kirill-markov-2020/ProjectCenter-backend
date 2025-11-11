@@ -14,7 +14,7 @@ namespace ProjectCenter.Infrastructure.Persistence.Configurations
             builder.Property(u => u.Name).HasMaxLength(50).IsRequired();
             builder.Property(u => u.Patronymic).HasMaxLength(50);
             builder.Property(u => u.Login).HasMaxLength(50).IsRequired();
-            builder.Property(u => u.Password).HasMaxLength(50).IsRequired();
+            builder.Property(u => u.Password).HasMaxLength(150).IsRequired();
             builder.Property(u => u.Phone).HasMaxLength(20).IsRequired();
             builder.Property(u => u.Email).HasMaxLength(50).IsRequired();
             builder.Property(u => u.Photo).HasMaxLength(150);

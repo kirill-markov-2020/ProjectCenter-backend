@@ -30,7 +30,7 @@ namespace ProjectCenter.Infrastructure.Services
             else if (user.Student != null)
                 role = "Student";
             else
-                role = "User"; // fallback
+                role = "User"; 
 
             var claims = new[]
             {

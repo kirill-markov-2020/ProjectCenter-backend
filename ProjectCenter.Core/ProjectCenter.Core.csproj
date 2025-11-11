@@ -10,7 +10,6 @@
     <Folder Include="Entities\" />
     <Folder Include="Events\" />
     <Folder Include="Services\" />
-    <Folder Include="Exceptions\" />
   </ItemGroup>
 
   <ItemGroup>
