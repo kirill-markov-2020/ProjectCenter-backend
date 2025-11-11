@@ -57,11 +57,21 @@ namespace ProjectCenter.API.Middleware
                     context.Response.StatusCode = (int)HttpStatusCode.BadRequest;
                     await context.Response.WriteAsJsonAsync(new { error = ex.Message, statusCode = 400 });
                     break;
+                case InvalidOperationException ex:
+                    context.Response.StatusCode = (int)HttpStatusCode.BadRequest;
+                    await context.Response.WriteAsJsonAsync(new { error = ex.Message, statusCode = 400 });
+                    break;
+                case UserNotFoundException ex:
+                    context.Response.StatusCode = (int)HttpStatusCode.NotFound;
+                    await context.Response.WriteAsJsonAsync(new { error = ex.Message, statusCode = 404 });
+                    break;
 
                 case ArgumentException ex:
                     context.Response.StatusCode = (int)HttpStatusCode.BadRequest;
                     await context.Response.WriteAsJsonAsync(new { error = ex.Message, statusCode = 400 });
                     break;
+                
+
 
                 default:
                     context.Response.StatusCode = (int)HttpStatusCode.InternalServerError;

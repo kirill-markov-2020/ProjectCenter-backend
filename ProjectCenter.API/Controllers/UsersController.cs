@@ -31,6 +31,13 @@ namespace ProjectCenter.Api.Controllers
             var users = await _userService.GetAllUsersAsync();
             return Ok(users);
         }
+        [HttpDelete("{id}")]
+        public async Task<IActionResult> DeleteUser(int id)
+        {
+            await _userService.DeleteUserAsync(id);
+            return NoContent();
+        }
+
 
     }
 }

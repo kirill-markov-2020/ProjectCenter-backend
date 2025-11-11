@@ -51,6 +51,31 @@ namespace ProjectCenter.Infrastructure.Persistence.Repositories
                     .ThenInclude(g => g.Teacher)
                 .ToListAsync();
         }
+        public async Task<User?> GetByIdAsync(int id)
+        {
+            return await _context.Users
+                .Include(u => u.Student)
+                .Include(u => u.Teacher)
+                .FirstOrDefaultAsync(u => u.Id == id);
+        }
+
+        public async Task DeleteUserAsync(User user)
+        {
+            _context.Users.Remove(user);
+            await _context.SaveChangesAsync();
+        }
+
+        public async Task DeleteStudentAsync(Student student)
+        {
+            _context.Students.Remove(student);
+            await _context.SaveChangesAsync();
+        }
+
+        public async Task DeleteTeacherAsync(Teacher teacher)
+        {
+            _context.Teachers.Remove(teacher);
+            await _context.SaveChangesAsync();
+        }
 
 
     }

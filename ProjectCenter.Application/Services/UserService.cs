@@ -130,6 +130,25 @@ namespace ProjectCenter.Application.Services
 
             return result;
         }
+        public async Task DeleteUserAsync(int id)
+        {
+            var user = await _userRepository.GetByIdAsync(id);
+
+            if (user == null)
+                throw new UserNotFoundException(id);
+
+            if (user.IsAdmin)
+                throw new InvalidOperationException("Нельзя удалить администратора.");
+
+            // Удаление связанных сущностей
+            if (user.Student != null)
+                await _userRepository.DeleteStudentAsync(user.Student);
+
+            if (user.Teacher != null)
+                await _userRepository.DeleteTeacherAsync(user.Teacher);
+
+            await _userRepository.DeleteUserAsync(user);
+        }
 
 
     }
