@@ -76,6 +76,12 @@ namespace ProjectCenter.Infrastructure.Persistence.Repositories
             _context.Teachers.Remove(teacher);
             await _context.SaveChangesAsync();
         }
+        public async Task UpdateUserAsync(User user)
+        {
+            _context.Users.Update(user);
+            await _context.SaveChangesAsync();
+        }
+
 
 
     }

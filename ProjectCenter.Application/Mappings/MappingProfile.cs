@@ -1,5 +1,6 @@
 ﻿using AutoMapper;
 using ProjectCenter.Application.DTOs;
+using ProjectCenter.Application.DTOs.UpdateUser;
 using ProjectCenter.Core.Entities;
 
 namespace ProjectCenter.Application.Mappings
@@ -21,6 +22,19 @@ namespace ProjectCenter.Application.Mappings
                            opt => opt.MapFrom(src => $"{src.User.Surname} {src.User.Name}"))
                 .ForMember(dest => dest.Text, opt => opt.MapFrom(src => src.Text))
                 .ForMember(dest => dest.Date, opt => opt.MapFrom(src => src.Date));
+
+
+            CreateMap<User, UpdateUserResponseDto>()
+                .ForMember(dest => dest.UserId, opt => opt.MapFrom(src => src.Id))
+                .ForMember(dest => dest.FullName, opt => opt.MapFrom(src => $"{src.Surname} {src.Name} {src.Patronymic}".Trim()))
+                .ForMember(dest => dest.Role, opt => opt.MapFrom(src =>
+                    src.IsAdmin ? "Admin" :
+                    src.Teacher != null ? "Teacher" :
+                    src.Student != null ? "Student" : "User"))
+                .ForMember(dest => dest.Login, opt => opt.MapFrom(src => src.Login))
+                .ForMember(dest => dest.Email, opt => opt.MapFrom(src => src.Email))
+                .ForMember(dest => dest.Phone, opt => opt.MapFrom(src => src.Phone))
+                .ForMember(dest => dest.Photo, opt => opt.MapFrom(src => src.Photo));
         }
     }
 }

@@ -1,14 +1,15 @@
-﻿using Azure.Core;
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
 using BCrypt.Net;
 using ProjectCenter.Application.DTOs;
 using ProjectCenter.Application.DTOs.CreateUser;
+using ProjectCenter.Application.DTOs.UpdateUser;
 using ProjectCenter.Application.Interfaces;
 using ProjectCenter.Core.Entities;
 using ProjectCenter.Core.Exceptions;
 using ProjectCenter.Core.ValueObjects;
-using System;
-using System.Threading.Tasks;
-using System.Linq;
 
 namespace ProjectCenter.Application.Services
 {
@@ -107,6 +108,7 @@ namespace ProjectCenter.Application.Services
                 Role = roleNormalized
             };
         }
+
         public async Task<List<UserDto>> GetAllUsersAsync()
         {
             var users = await _userRepository.GetAllAsync();
@@ -130,13 +132,13 @@ namespace ProjectCenter.Application.Services
 
             return result;
         }
+
         public async Task DeleteUserAsync(int id)
         {
             var user = await _userRepository.GetByIdAsync(id);
             if (user == null)
                 throw new ArgumentException("Пользователь не найден.");
 
-            // Если это преподаватель — проверяем, есть ли студенты
             if (user.Teacher != null)
             {
                 var students = await _userRepository.GetAllAsync();
@@ -155,6 +157,177 @@ namespace ProjectCenter.Application.Services
             await _userRepository.DeleteUserAsync(user);
         }
 
+        public async Task<UpdateUserResponseDto> UpdateUserAsync(int id, UpdateUserRequestDto dto, string currentUserRole, int currentUserId)
+        {
+            var user = await _userRepository.GetByIdAsync(id);
+            if (user == null)
+                throw new ArgumentException("Пользователь не найден.");
 
+            bool callerIsAdmin = string.Equals(currentUserRole, "Admin", StringComparison.OrdinalIgnoreCase);
+            bool callerIsSelf = currentUserId == id;
+
+            if (!callerIsAdmin && !callerIsSelf)
+                throw new ForbiddenUserUpdateException();
+
+            if (user.IsAdmin && !callerIsAdmin)
+                throw new CannotModifyAdminException();
+
+            if (!callerIsAdmin)
+            {
+                if (dto.Role != null || dto.Login != null  ||
+                    dto.Surname != null || dto.Name != null || dto.Patronymic != null ||
+                    dto.GroupId.HasValue || dto.TeacherId.HasValue)
+                {
+                    throw new InvalidUserUpdateException("Вы пытаетесь изменить недопустимые поля.");
+                }
+            }
+
+            if (dto.Phone != null)
+            {
+                if (!PhoneValidator.IsValid(dto.Phone))
+                    throw new InvalidPhoneNumberException("Некорректный формат телефона. Используйте формат +7XXXXXXXXXX или 8XXXXXXXXXX.");
+                user.Phone = dto.Phone;
+            }
+
+            if (dto.Email != null)
+            {
+                var emailErrors = EmailValidator.Validate(dto.Email);
+                if (emailErrors.Any())
+                    throw new InvalidEmailException(string.Join(" ", emailErrors));
+
+                if (!string.Equals(user.Email, dto.Email, StringComparison.OrdinalIgnoreCase))
+                {
+                    if (await _userRepository.EmailExistsAsync(dto.Email))
+                        throw new ArgumentException("Такой Email уже занят");
+                }
+
+                user.Email = dto.Email;
+            }
+
+            if (dto.Photo != null)
+                user.Photo = dto.Photo;
+
+            if (callerIsAdmin)
+            {
+                if (dto.Login != null)
+                {
+                    if (!string.Equals(user.Login, dto.Login, StringComparison.OrdinalIgnoreCase))
+                    {
+                        if (await _userRepository.LoginExistsAsync(dto.Login))
+                            throw new ArgumentException("Такой логин уже занят");
+                    }
+
+                    user.Login = dto.Login;
+                }
+
+               
+
+                if (dto.Surname != null) user.Surname = dto.Surname;
+                if (dto.Name != null) user.Name = dto.Name;
+                if (dto.Patronymic != null) user.Patronymic = dto.Patronymic;
+
+                if (dto.Role != null)
+                {
+                    var desiredRole = dto.Role.Trim();
+                    var validRoles = new[] { "Admin", "Teacher", "Student" };
+                    if (!validRoles.Any(r => string.Equals(r, desiredRole, StringComparison.OrdinalIgnoreCase)))
+                        throw new InvalidRoleException($"Недопустимая роль: {dto.Role}. Разрешены только Admin, Teacher, Student.");
+
+                    if (string.Equals(desiredRole, "Admin", StringComparison.OrdinalIgnoreCase))
+                    {
+                        if (user.Teacher != null)
+                        {
+                            var allUsers = await _userRepository.GetAllAsync();
+                            bool hasStudents = allUsers.Any(u => u.Student != null && u.Student.TeacherId == user.Teacher.Id);
+                            if (hasStudents)
+                                throw new InvalidUserUpdateException("Нельзя убрать роль преподавателя — у него есть закреплённые студенты.");
+                            await _userRepository.DeleteTeacherAsync(user.Teacher);
+                            user.Teacher = null;
+                        }
+
+                        if (user.Student != null)
+                        {
+                            await _userRepository.DeleteStudentAsync(user.Student);
+                            user.Student = null;
+                        }
+
+                        user.IsAdmin = true;
+                    }
+                    else if (string.Equals(desiredRole, "Teacher", StringComparison.OrdinalIgnoreCase))
+                    {
+                        if (user.Student != null)
+                        {
+                            await _userRepository.DeleteStudentAsync(user.Student);
+                            user.Student = null;
+                        }
+
+                        if (user.Teacher == null)
+                        {
+                            var teacher = new Teacher { UserId = user.Id };
+                            await _userRepository.AddTeacherAsync(teacher);
+                        }
+
+                        user.IsAdmin = false;
+                    }
+                    else
+                    {
+                        if (!dto.GroupId.HasValue || !dto.TeacherId.HasValue)
+                            throw new InvalidStudentDataException("Для назначения роли 'Student' необходимо указать GroupId и TeacherId.");
+
+                        if (user.Teacher != null)
+                        {
+                            var allUsers = await _userRepository.GetAllAsync();
+                            bool teacherHasStudents = allUsers.Any(u => u.Student != null && u.Student.TeacherId == user.Teacher.Id);
+                            if (teacherHasStudents)
+                                throw new InvalidUserUpdateException("Нельзя убрать роль преподавателя — у него есть закреплённые студенты.");
+
+                            await _userRepository.DeleteTeacherAsync(user.Teacher);
+                            user.Teacher = null;
+                        }
+
+                        if (user.Student == null)
+                        {
+                            var student = new Student
+                            {
+                                UserId = user.Id,
+                                GroupId = dto.GroupId.Value,
+                                TeacherId = dto.TeacherId.Value
+                            };
+                            await _userRepository.AddStudentAsync(student);
+                        }
+                        else
+                        {
+                            user.Student.GroupId = dto.GroupId.Value;
+                            user.Student.TeacherId = dto.TeacherId.Value;
+                        }
+
+                        user.IsAdmin = false;
+                    }
+                }
+
+                if (dto.GroupId.HasValue && user.Student != null)
+                    user.Student.GroupId = dto.GroupId.Value;
+
+                if (dto.TeacherId.HasValue && user.Student != null)
+                    user.Student.TeacherId = dto.TeacherId.Value;
+            }
+
+            await _userRepository.UpdateUserAsync(user);
+
+            var roleString = user.IsAdmin ? "Admin"
+                             : user.Teacher != null ? "Teacher"
+                             : user.Student != null ? "Student" : "User";
+
+            return new UpdateUserResponseDto
+            {
+                UserId = user.Id,
+                FullName = $"{user.Surname} {user.Name} {user.Patronymic}".Trim(),
+                Role = roleString,
+                Login = user.Login,
+                Email = user.Email,
+                Phone = user.Phone,
+                Photo = user.Photo
+            };
+        }
     }
 }

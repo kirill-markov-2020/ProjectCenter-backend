@@ -74,6 +74,21 @@ namespace ProjectCenter.API.Middleware
                     context.Response.StatusCode = (int)HttpStatusCode.BadRequest;
                     await context.Response.WriteAsJsonAsync(new { error = ex.Message, statusCode = 400 });
                     break;
+                case ForbiddenUserUpdateException ex:
+                    context.Response.StatusCode = (int)HttpStatusCode.Forbidden;
+                    await context.Response.WriteAsJsonAsync(new { error = ex.Message, statusCode = 403 });
+                    break;
+
+                case CannotModifyAdminException ex:
+                    context.Response.StatusCode = (int)HttpStatusCode.BadRequest;
+                    await context.Response.WriteAsJsonAsync(new { error = ex.Message, statusCode = 400 });
+                    break;
+
+                case InvalidUserUpdateException ex:
+                    context.Response.StatusCode = (int)HttpStatusCode.BadRequest;
+                    await context.Response.WriteAsJsonAsync(new { error = ex.Message, statusCode = 400 });
+                    break;
+
 
 
 

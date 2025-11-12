@@ -2,7 +2,8 @@
 using Microsoft.AspNetCore.Mvc;
 using ProjectCenter.Application.DTOs;
 using ProjectCenter.Application.DTOs.CreateUser;
- using ProjectCenter.Application.Interfaces;
+using ProjectCenter.Application.DTOs.UpdateUser;
+using ProjectCenter.Application.Interfaces;
 
 namespace ProjectCenter.Api.Controllers
 {
@@ -36,6 +37,19 @@ namespace ProjectCenter.Api.Controllers
         {
             await _userService.DeleteUserAsync(id);
             return NoContent();
+        }
+        [HttpPut("{id}")]
+        [Authorize]
+        public async Task<IActionResult> UpdateUser(int id, [FromBody] UpdateUserRequestDto dto)
+        {
+            var currentRole = HttpContext.Items["UserRole"]?.ToString();
+            if (!int.TryParse(HttpContext.Items["UserId"]?.ToString(), out var currentUserId))
+            {
+                return Unauthorized();
+            }
+
+            var updated = await _userService.UpdateUserAsync(id, dto, currentRole ?? "User", currentUserId);
+            return Ok(updated);
         }
 
 
