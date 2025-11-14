@@ -31,6 +31,17 @@ builder.Services.AddAutoMapper(cfg =>
     cfg.AddProfile<MappingProfile>();
 });
 
+builder.Services.AddCors(options =>
+{
+    options.AddDefaultPolicy(policy =>
+    {
+        policy.WithOrigins("http://localhost:5173")
+              .AllowAnyHeader()
+              .AllowAnyMethod()
+              .AllowCredentials();
+    });
+});
+
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerWithBearer();
@@ -46,8 +57,10 @@ if (app.Environment.IsDevelopment())
 
 app.UseAuthentication();
 app.UseAuthorization();
-app.UseMiddleware<ProjectCenter.API.Middleware.UserContextMiddleware>();
 
+app.UseCors();
+
+app.UseMiddleware<ProjectCenter.API.Middleware.UserContextMiddleware>();
 
 app.MapControllers();
 
