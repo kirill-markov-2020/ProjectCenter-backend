@@ -2,13 +2,14 @@
 using BCrypt.Net;
 using ProjectCenter.Application.DTOs;
 using ProjectCenter.Application.DTOs.CreateUser;
+using ProjectCenter.Application.DTOs.Profile;
 using ProjectCenter.Application.Interfaces;
 using ProjectCenter.Core.Entities;
 using ProjectCenter.Core.Exceptions;
 using ProjectCenter.Core.ValueObjects;
 using System;
-using System.Threading.Tasks;
 using System.Linq;
+using System.Threading.Tasks;
 
 namespace ProjectCenter.Application.Services
 {
@@ -120,6 +121,7 @@ namespace ProjectCenter.Application.Services
                 Login = u.Login,
                 Email = u.Email,
                 Phone = u.Phone,
+                Photo = u.Photo,
                 Role = u.IsAdmin ? "Admin"
                      : u.Teacher != null ? "Teacher"
                      : u.Student != null ? "Student"
@@ -138,7 +140,7 @@ namespace ProjectCenter.Application.Services
             if (user == null)
                 throw new ArgumentException("Пользователь не найден.");
 
-            // Если это преподаватель — проверяем, есть ли студенты
+          
             if (user.Teacher != null)
             {
                 var students = await _userRepository.GetAllAsync();
@@ -178,6 +180,7 @@ namespace ProjectCenter.Application.Services
                 Surname = user.Surname,
                 Phone = user.Phone,
                 Name = user.Name,
+                Photo = user.Photo,
                 Patronymic = user.Patronymic
 
             };
@@ -193,6 +196,50 @@ namespace ProjectCenter.Application.Services
 
             return dto;
         }
+        public async Task UpdateMyProfileAsync(int userId, UpdateProfileRequestDto dto)
+        {
+            var user = await _userRepository.GetByIdAsync(userId);
+            if (user == null)
+                throw new ArgumentException("Пользователь не найден.");
+
+           
+            if (!string.IsNullOrWhiteSpace(dto.Email))
+            {
+                if (user.Email != dto.Email)
+                {
+                    
+                    var emailErrors = EmailValidator.Validate(dto.Email);
+                    if (emailErrors.Any())
+                        throw new InvalidEmailException(string.Join(" ", emailErrors));
+
+                 
+                    bool exists = await _userRepository.EmailExistsAsync(dto.Email);
+                    if (exists)
+                        throw new InvalidEmailException("Такой email уже используется.");
+
+                    user.Email = dto.Email;
+                }
+            }
+
+        
+            if (!string.IsNullOrWhiteSpace(dto.PhoneNumber))
+            {
+                if (!PhoneValidator.IsValid(dto.PhoneNumber))
+                    throw new InvalidPhoneNumberException("Некорректный формат телефона. Используйте формат +7XXXXXXXXXX или 8XXXXXXXXXX.");
+
+                user.Phone = dto.PhoneNumber;
+            }
+
+        
+            if (!string.IsNullOrWhiteSpace(dto.PhotoUrl))
+            {
+                user.Photo = dto.PhotoUrl;
+            }
+
+            await _userRepository.UpdateUserAsync(user);
+        }
+
+
 
 
 

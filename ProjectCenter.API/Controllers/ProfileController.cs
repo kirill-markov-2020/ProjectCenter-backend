@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using ProjectCenter.Application.DTOs.Profile;
 using ProjectCenter.Application.Interfaces;
 
 namespace ProjectCenter.Api.Controllers
@@ -27,5 +28,18 @@ namespace ProjectCenter.Api.Controllers
             var profile = await _userService.GetMyProfileAsync(userId);
             return Ok(profile);
         }
+        [HttpPut]
+        public async Task<IActionResult> UpdateMyProfile([FromBody] UpdateProfileRequestDto dto)
+        {
+            if (!HttpContext.Items.ContainsKey("UserId"))
+                return Unauthorized();
+
+            int userId = (int)HttpContext.Items["UserId"];
+
+            await _userService.UpdateMyProfileAsync(userId, dto);
+
+            return NoContent();
+        }
+
     }
 }

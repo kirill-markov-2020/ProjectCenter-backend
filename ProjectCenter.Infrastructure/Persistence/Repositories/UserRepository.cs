@@ -89,6 +89,12 @@ namespace ProjectCenter.Infrastructure.Persistence.Repositories
                         .ThenInclude(s => s.User)
                 .FirstOrDefaultAsync(u => u.Id == id);
         }
+        public async Task UpdateUserAsync(User user)
+        {
+            _context.Users.Update(user);
+            await _context.SaveChangesAsync();
+        }
+
 
 
 
