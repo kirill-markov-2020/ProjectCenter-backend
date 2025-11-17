@@ -38,7 +38,7 @@ namespace ProjectCenter.Application.Services
                         : user.Student != null
                             ? "Student"
                             : "User",
-                FullName = user.Surname + " " + user.Name + " " + user.Patronymic
+                FullName = $"{user.Surname} {user.Name} {user.Patronymic}".Trim(),
             };
         }
     }

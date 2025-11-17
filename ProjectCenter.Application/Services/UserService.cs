@@ -114,7 +114,9 @@ namespace ProjectCenter.Application.Services
             var result = users.Select(u => new UserDto
             {
                 Id = u.Id,
-                FullName = $"{u.Surname} {u.Name} {u.Patronymic}".Trim(),
+                Surname = u.Surname,
+                Name = u.Name,
+                Patronymic = u.Patronymic,
                 Login = u.Login,
                 Email = u.Email,
                 Phone = u.Phone,
@@ -154,6 +156,44 @@ namespace ProjectCenter.Application.Services
 
             await _userRepository.DeleteUserAsync(user);
         }
+        public async Task<UserDto> GetMyProfileAsync(int userId)
+        {
+            var user = await _userRepository.GetFullUserByIdAsync(userId)
+                      ?? throw new ArgumentException("Пользователь не найден");
+
+            string role = user.IsAdmin
+                ? "Admin"
+                : user.Teacher != null
+                    ? "Teacher"
+                    : user.Student != null
+                        ? "Student"
+                        : "User";
+
+            var dto = new UserDto
+            {
+                Id = user.Id,
+                Login = user.Login,
+                Email = user.Email,
+                Role = role,
+                Surname = user.Surname,
+                Phone = user.Phone,
+                Name = user.Name,
+                Patronymic = user.Patronymic
+
+            };
+
+            if (user.Student != null)
+            {
+                dto.GroupName = user.Student.Group?.Name;
+
+                dto.CuratorName = $"{user.Student.Teacher?.User?.Surname} {user.Student.Teacher?.User?.Name} {user.Student.Teacher?.User?.Patronymic}".Trim();
+            }
+
+           
+
+            return dto;
+        }
+
 
 
     }
