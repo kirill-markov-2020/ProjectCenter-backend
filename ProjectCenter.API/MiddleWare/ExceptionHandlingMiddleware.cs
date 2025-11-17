@@ -75,6 +75,10 @@ namespace ProjectCenter.API.Middleware
                     await context.Response.WriteAsJsonAsync(new { error = ex.Message, statusCode = 400 });
                     break;
 
+                case TokenExpiredException ex:
+                    context.Response.StatusCode = (int)HttpStatusCode.Unauthorized;
+                    await context.Response.WriteAsJsonAsync(new { error = ex.Message, statusCode = 401 });
+                    break;
 
 
 
