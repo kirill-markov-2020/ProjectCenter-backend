@@ -11,9 +11,9 @@ namespace ProjectCenter.Application.Mappings
             
             CreateMap<Project, ProjectDto>()
                 .ForMember(dest => dest.StudentName, opt => opt.MapFrom(src =>
-                     $"{src.Student.User.Surname} {src.Student.User.Name} {src.Student.User.Patronymic}"))
+                     $"{src.Student.User.Surname} {src.Student.User.Name} {src.Student.User.Patronymic}".Trim()))
                 .ForMember(dest => dest.TeacherName, opt => opt.MapFrom(src =>
-                     $"{src.Student.Teacher.User.Surname} {src.Student.Teacher.User.Name} {src.Student.Teacher.User.Patronymic}"))
+                     $"{src.Student.Teacher.User.Surname} {src.Student.Teacher.User.Name} {src.Student.Teacher.User.Patronymic}".Trim()))
                 .ForMember(dest => dest.StatusName, opt => opt.MapFrom(src => src.Status.Name))
                 .ForMember(dest => dest.TypeName, opt => opt.MapFrom(src => src.Type.Name))
                 .ForMember(dest => dest.SubjectName, opt => opt.MapFrom(src => src.Subject.Name))

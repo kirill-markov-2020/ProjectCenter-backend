@@ -37,6 +37,18 @@ namespace ProjectCenter.Api.Controllers
             var project = await _projectService.GetProjectByIdAsync(id);
             return Ok(project);
         }
+        [HttpPost]
+        [Authorize(Roles = "Student")]
+        public async Task<IActionResult> CreateProject([FromBody] CreateProjectRequestDto dto)
+        {
+            if (!HttpContext.Items.ContainsKey("UserId"))
+                return Unauthorized();
+
+            int userId = (int)HttpContext.Items["UserId"];
+
+            var project = await _projectService.CreateProjectAsync(dto, userId);
+            return CreatedAtAction(nameof(GetProjectById), new { id = project.Id }, project);
+        }
 
     }
 }

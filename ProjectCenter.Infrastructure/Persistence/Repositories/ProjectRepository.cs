@@ -59,5 +59,10 @@ namespace ProjectCenter.Infrastructure.Persistence.Repositories
                     .ThenInclude(c => c.User)
                 .FirstOrDefaultAsync(p => p.Id == id);
         }
+        public async Task AddProjectAsync(Project project)
+        {
+            _context.Projects.Add(project);
+            await _context.SaveChangesAsync();
+        }
     }
 }

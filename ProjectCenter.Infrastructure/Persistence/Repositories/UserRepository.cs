@@ -94,7 +94,13 @@ namespace ProjectCenter.Infrastructure.Persistence.Repositories
             _context.Users.Update(user);
             await _context.SaveChangesAsync();
         }
-        
+        public async Task<Student?> GetStudentByUserIdAsync(int userId)
+        {
+            return await _context.Students
+                .Include(s => s.Teacher) // Важно: включаем куратора!
+                .FirstOrDefaultAsync(s => s.UserId == userId);
+        }
+
 
 
 

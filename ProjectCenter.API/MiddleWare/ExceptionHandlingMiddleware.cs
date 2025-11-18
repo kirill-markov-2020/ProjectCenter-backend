@@ -84,7 +84,10 @@ namespace ProjectCenter.API.Middleware
                     await context.Response.WriteAsJsonAsync(new { error = ex.Message, statusCode = 404 });
                     break;
 
-                
+                case StudentNotFoundException ex:
+                    context.Response.StatusCode = (int)HttpStatusCode.NotFound;
+                    await context.Response.WriteAsJsonAsync(new { error = ex.Message, statusCode = 404 });
+                    break;
 
 
 
