@@ -1,4 +1,4 @@
-﻿namespace ProjectCenter.Application.DTOs.Profile
+﻿namespace ProjectCenter.Application.DTOs.UpdateUser
 {
     public class UpdateProfileRequestDto
     {

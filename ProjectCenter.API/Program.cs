@@ -29,6 +29,7 @@ builder.Services.AddScoped<IUserService, UserService>();
 builder.Services.AddAutoMapper(cfg =>
 {
     cfg.AddProfile<MappingProfile>();
+    cfg.AddProfile<UserProfile>();
 });
 
 builder.Services.AddCors(options =>

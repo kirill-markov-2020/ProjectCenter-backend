@@ -2,7 +2,7 @@
 using BCrypt.Net;
 using ProjectCenter.Application.DTOs;
 using ProjectCenter.Application.DTOs.CreateUser;
-using ProjectCenter.Application.DTOs.Profile;
+using ProjectCenter.Application.DTOs.UpdateUser;
 using ProjectCenter.Application.Interfaces;
 using ProjectCenter.Core.Entities;
 using ProjectCenter.Core.Exceptions;
@@ -238,8 +238,60 @@ namespace ProjectCenter.Application.Services
 
             await _userRepository.UpdateUserAsync(user);
         }
+        public async Task UpdateUserByAdminAsync(int userId, UpdateUserRequestDto dto)
+        {
+            var user = await _userRepository.GetFullUserByIdAsync(userId);
+            if (user == null)
+                throw new ArgumentException("Пользователь не найден.");
 
+            // --- ВАЛИДАЦИЯ ОСНОВНОЙ ИНФОРМАЦИИ ---
+            if (!string.IsNullOrWhiteSpace(dto.Email) && user.Email != dto.Email)
+            {
+                var emailErrors = EmailValidator.Validate(dto.Email);
+                if (emailErrors.Any())
+                    throw new InvalidEmailException(string.Join(" ", emailErrors));
 
+                if (await _userRepository.EmailExistsAsync(dto.Email))
+                    throw new InvalidEmailException("Такой email уже используется.");
+
+                user.Email = dto.Email;
+            }
+
+            if (!string.IsNullOrWhiteSpace(dto.Phone))
+            {
+                if (!PhoneValidator.IsValid(dto.Phone))
+                    throw new InvalidPhoneNumberException("Некорректный формат телефона. Используйте формат +7XXXXXXXXXX или 8XXXXXXXXXX.");
+
+                user.Phone = dto.Phone;
+            }
+
+            if (!string.IsNullOrWhiteSpace(dto.Surname))
+                user.Surname = dto.Surname;
+            if (!string.IsNullOrWhiteSpace(dto.Name))
+                user.Name = dto.Name;
+            if (!string.IsNullOrWhiteSpace(dto.Patronymic))
+                user.Patronymic = dto.Patronymic;
+            if (!string.IsNullOrWhiteSpace(dto.Login))
+                user.Login = dto.Login;
+            if (!string.IsNullOrWhiteSpace(dto.PhotoPath))
+                user.Photo = dto.PhotoPath;
+
+            // --- ОБНОВЛЕНИЕ ДАННЫХ СТУДЕНТА ---
+            if (user.Student != null)
+            {
+                if (dto.GroupId.HasValue)
+                    user.Student.GroupId = dto.GroupId.Value;
+
+                if (dto.CuratorId.HasValue)
+                    user.Student.TeacherId = dto.CuratorId.Value;
+
+                // Проверка корректности данных студента
+                if (user.Student.GroupId == 0 || user.Student.TeacherId == 0)
+                    throw new InvalidStudentDataException("Для студента должны быть указаны GroupId и TeacherId.");
+            }
+
+            await _userRepository.UpdateUserAsync(user);
+        }
 
 
 

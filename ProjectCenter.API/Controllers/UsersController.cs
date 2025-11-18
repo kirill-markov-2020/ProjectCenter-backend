@@ -1,6 +1,6 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using ProjectCenter.Application.DTOs;
+using ProjectCenter.Application.DTOs.UpdateUser;
 using ProjectCenter.Application.DTOs.CreateUser;
  using ProjectCenter.Application.Interfaces;
 
@@ -37,6 +37,22 @@ namespace ProjectCenter.Api.Controllers
             await _userService.DeleteUserAsync(id);
             return NoContent();
         }
+        [HttpPut("{id}")]
+        public async Task<IActionResult> UpdateUser(int id, [FromBody] UpdateUserRequestDto dto)
+        {
+            if (dto == null)
+                return BadRequest(new { error = "Данные для обновления не переданы." });
+
+            // Защита на случай, если кто-то обойдет атрибут [Authorize(Roles = "Admin")]
+            var role = HttpContext.Items["UserRole"]?.ToString();
+            if (role != "Admin")
+                return Forbid();
+
+            await _userService.UpdateUserByAdminAsync(id, dto);
+
+            return NoContent();
+        }
+
 
 
     }

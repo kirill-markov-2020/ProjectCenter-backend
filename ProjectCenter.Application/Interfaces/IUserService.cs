@@ -1,6 +1,6 @@
 ﻿using ProjectCenter.Application.DTOs;
 using ProjectCenter.Application.DTOs.CreateUser;
-using ProjectCenter.Application.DTOs.Profile;
+using ProjectCenter.Application.DTOs.UpdateUser;
 
 namespace ProjectCenter.Application.Interfaces
 {
@@ -19,6 +19,11 @@ namespace ProjectCenter.Application.Interfaces
 
     
         Task UpdateMyProfileAsync(int userId, UpdateProfileRequestDto dto);
+        
+        Task UpdateUserByAdminAsync(int userId, UpdateUserRequestDto dto);
+            // ... остальное уже есть
+        
+
 
     }
 }
