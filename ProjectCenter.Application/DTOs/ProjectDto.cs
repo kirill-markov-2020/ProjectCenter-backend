@@ -9,6 +9,8 @@
         public string StatusName { get; set; }
         public string TypeName { get; set; }
         public string SubjectName { get; set; }
+        public string? FileProject { get; set; }
+        public string? FileDocumentation { get; set; }
         public bool IsPublic { get; set; }
         public DateTime DateDeadline { get; set; }
         public DateTime CreatedDate { get; set; }

@@ -31,6 +31,12 @@ namespace ProjectCenter.Api.Controllers
             var projects = await _projectService.GetProjectsForUserAsync(userId, isAdmin);
             return Ok(projects);
         }
+        [HttpGet("{id}")]
+        public async Task<IActionResult> GetProjectById(int id)
+        {
+            var project = await _projectService.GetProjectByIdAsync(id);
+            return Ok(project);
+        }
 
     }
 }

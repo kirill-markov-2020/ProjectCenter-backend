@@ -79,6 +79,12 @@ namespace ProjectCenter.API.Middleware
                     context.Response.StatusCode = (int)HttpStatusCode.Unauthorized;
                     await context.Response.WriteAsJsonAsync(new { error = ex.Message, statusCode = 401 });
                     break;
+                case ProjectNotFoundException ex:
+                    context.Response.StatusCode = (int)HttpStatusCode.NotFound;
+                    await context.Response.WriteAsJsonAsync(new { error = ex.Message, statusCode = 404 });
+                    break;
+
+                
 
 
 

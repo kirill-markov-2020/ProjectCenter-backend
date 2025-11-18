@@ -1,6 +1,7 @@
 ﻿using AutoMapper;
 using ProjectCenter.Application.DTOs;
 using ProjectCenter.Application.Interfaces;
+using ProjectCenter.Core.Exceptions;
 
 namespace ProjectCenter.Application.Services
 {
@@ -22,6 +23,15 @@ namespace ProjectCenter.Application.Services
                 : await _projectRepository.GetPublicProjectsAsync();
 
             return _mapper.Map<List<ProjectDto>>(projects);
+        }
+        public async Task<ProjectDto> GetProjectByIdAsync(int id)
+        {
+            var project = await _projectRepository.GetProjectByIdAsync(id);
+
+            if (project == null)
+                throw new ProjectNotFoundException(id);
+
+            return _mapper.Map<ProjectDto>(project);
         }
     }
 }
