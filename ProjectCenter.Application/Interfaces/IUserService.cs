@@ -21,7 +21,7 @@ namespace ProjectCenter.Application.Interfaces
         Task UpdateMyProfileAsync(int userId, UpdateProfileRequestDto dto);
         
         Task UpdateUserByAdminAsync(int userId, UpdateUserRequestDto dto);
-            // ... остальное уже есть
+          
         
 
 

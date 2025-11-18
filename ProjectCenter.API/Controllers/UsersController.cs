@@ -43,7 +43,7 @@ namespace ProjectCenter.Api.Controllers
             if (dto == null)
                 return BadRequest(new { error = "Данные для обновления не переданы." });
 
-            // Защита на случай, если кто-то обойдет атрибут [Authorize(Roles = "Admin")]
+            
             var role = HttpContext.Items["UserRole"]?.ToString();
             if (role != "Admin")
                 return Forbid();

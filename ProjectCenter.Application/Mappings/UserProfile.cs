@@ -20,7 +20,7 @@ public class UserProfile : Profile
             .ForMember(dest => dest.CuratorName,
                 opt => opt.MapFrom(src =>
                     src.Student != null && src.Student.Teacher != null
-                        ? $"{src.Student.Teacher.User.Surname} {src.Student.Teacher.User.Name}"
+                        ? $"{src.Student.Teacher.User.Surname} {src.Student.Teacher.User.Name} {src.Student.Teacher.User.Patronymic}"
                         : null));
     }
 }

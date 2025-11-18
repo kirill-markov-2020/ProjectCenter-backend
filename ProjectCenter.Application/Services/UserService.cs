@@ -1,4 +1,5 @@
-﻿using Azure.Core;
+﻿using AutoMapper;
+using Azure.Core;
 using BCrypt.Net;
 using ProjectCenter.Application.DTOs;
 using ProjectCenter.Application.DTOs.CreateUser;
@@ -17,10 +18,14 @@ namespace ProjectCenter.Application.Services
     {
         private readonly IUserRepository _userRepository;
 
-        public UserService(IUserRepository userRepository)
+        private readonly IMapper _mapper;
+
+        public UserService(IUserRepository userRepository, IMapper mapper)
         {
             _userRepository = userRepository;
+            _mapper = mapper;
         }
+
 
         public async Task<CreateUserResponseDto> CreateUserAsync(CreateUserRequestDto dto)
         {
@@ -111,29 +116,9 @@ namespace ProjectCenter.Application.Services
         public async Task<List<UserDto>> GetAllUsersAsync()
         {
             var users = await _userRepository.GetAllAsync();
-
-            var result = users.Select(u => new UserDto
-            {
-                Id = u.Id,
-                Surname = u.Surname,
-                Name = u.Name,
-                Patronymic = u.Patronymic,
-                Login = u.Login,
-                Email = u.Email,
-                Phone = u.Phone,
-                Photo = u.Photo,
-                Role = u.IsAdmin ? "Admin"
-                     : u.Teacher != null ? "Teacher"
-                     : u.Student != null ? "Student"
-                     : "User",
-                GroupName = u.Student?.Group?.Name,
-                CuratorName = u.Student?.Teacher != null
-                    ? $"{u.Student.Teacher.User.Surname} {u.Student.Teacher.User.Name} {u.Student.Teacher.User.Patronymic}".Trim()
-                    : null
-            }).ToList();
-
-            return result;
+            return _mapper.Map<List<UserDto>>(users);
         }
+
         public async Task DeleteUserAsync(int id)
         {
             var user = await _userRepository.GetByIdAsync(id);
@@ -161,41 +146,11 @@ namespace ProjectCenter.Application.Services
         public async Task<UserDto> GetMyProfileAsync(int userId)
         {
             var user = await _userRepository.GetFullUserByIdAsync(userId)
-                      ?? throw new ArgumentException("Пользователь не найден");
+                       ?? throw new ArgumentException("Пользователь не найден");
 
-            string role = user.IsAdmin
-                ? "Admin"
-                : user.Teacher != null
-                    ? "Teacher"
-                    : user.Student != null
-                        ? "Student"
-                        : "User";
-
-            var dto = new UserDto
-            {
-                Id = user.Id,
-                Login = user.Login,
-                Email = user.Email,
-                Role = role,
-                Surname = user.Surname,
-                Phone = user.Phone,
-                Name = user.Name,
-                Photo = user.Photo,
-                Patronymic = user.Patronymic
-
-            };
-
-            if (user.Student != null)
-            {
-                dto.GroupName = user.Student.Group?.Name;
-
-                dto.CuratorName = $"{user.Student.Teacher?.User?.Surname} {user.Student.Teacher?.User?.Name} {user.Student.Teacher?.User?.Patronymic}".Trim();
-            }
-
-           
-
-            return dto;
+            return _mapper.Map<UserDto>(user);
         }
+
         public async Task UpdateMyProfileAsync(int userId, UpdateProfileRequestDto dto)
         {
             var user = await _userRepository.GetByIdAsync(userId);
@@ -244,7 +199,6 @@ namespace ProjectCenter.Application.Services
             if (user == null)
                 throw new ArgumentException("Пользователь не найден.");
 
-            // --- ВАЛИДАЦИЯ ОСНОВНОЙ ИНФОРМАЦИИ ---
             if (!string.IsNullOrWhiteSpace(dto.Email) && user.Email != dto.Email)
             {
                 var emailErrors = EmailValidator.Validate(dto.Email);
@@ -276,7 +230,7 @@ namespace ProjectCenter.Application.Services
             if (!string.IsNullOrWhiteSpace(dto.PhotoPath))
                 user.Photo = dto.PhotoPath;
 
-            // --- ОБНОВЛЕНИЕ ДАННЫХ СТУДЕНТА ---
+           
             if (user.Student != null)
             {
                 if (dto.GroupId.HasValue)
@@ -285,7 +239,7 @@ namespace ProjectCenter.Application.Services
                 if (dto.CuratorId.HasValue)
                     user.Student.TeacherId = dto.CuratorId.Value;
 
-                // Проверка корректности данных студента
+            
                 if (user.Student.GroupId == 0 || user.Student.TeacherId == 0)
                     throw new InvalidStudentDataException("Для студента должны быть указаны GroupId и TeacherId.");
             }
