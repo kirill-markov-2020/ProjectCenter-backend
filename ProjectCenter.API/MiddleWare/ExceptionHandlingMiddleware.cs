@@ -88,6 +88,10 @@ namespace ProjectCenter.API.Middleware
                     context.Response.StatusCode = (int)HttpStatusCode.NotFound;
                     await context.Response.WriteAsJsonAsync(new { error = ex.Message, statusCode = 404 });
                     break;
+                case ActiveProjectExistsException ex:
+                    context.Response.StatusCode = (int)HttpStatusCode.Conflict; 
+                    await context.Response.WriteAsJsonAsync(new { error = ex.Message, statusCode = 409 });
+                    break;
 
 
 

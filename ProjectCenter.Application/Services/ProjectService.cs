@@ -47,25 +47,29 @@ namespace ProjectCenter.Application.Services
             if (student.TeacherId == 0 || student.Teacher == null)
                 throw new InvalidOperationException("У студента не назначен куратор. Обратитесь к администратору.");
 
+            // Проверяем, нет ли у студента активного проекта
+            var activeProject = await _projectRepository.GetActiveProjectByStudentIdAsync(student.Id);
+            if (activeProject != null)
+                throw new ActiveProjectExistsException(activeProject.Title);
+
             // Создаем проект с куратором студента
             var project = new Project
             {
                 Title = dto.Title,
                 StudentId = student.Id,
-                TeacherId = student.TeacherId, // Берем куратора студента!
+                TeacherId = student.TeacherId,
                 TypeId = dto.TypeId,
                 SubjectId = dto.SubjectId,
                 StatusId = 1, // Статус "Черновик" или "В работе"
                 IsPublic = dto.IsPublic,
                 FileProject = null,
                 FileDocumentation = null,
-                DateDeadline = new DateTime(DateTime.Now.Year + 1, 6, 30), // 30 июня следующего года
+                DateDeadline = new DateTime(DateTime.Now.Year + 1, 6, 30),
                 CreatedDate = DateTime.UtcNow
             };
 
             await _projectRepository.AddProjectAsync(project);
 
-            // Загружаем созданный проект со всеми связями для маппинга
             var createdProject = await _projectRepository.GetProjectByIdAsync(project.Id);
             return _mapper.Map<ProjectDto>(createdProject);
         }

@@ -64,5 +64,14 @@ namespace ProjectCenter.Infrastructure.Persistence.Repositories
             _context.Projects.Add(project);
             await _context.SaveChangesAsync();
         }
+        public async Task<Project?> GetActiveProjectByStudentIdAsync(int studentId)
+        {
+            // Статусы, которые считаются НЕ активными (можно создавать новый проект)
+            var inactiveStatuses = new[] { 10, 11, 12, 13, 17, 18 };
+
+            return await _context.Projects
+                .Where(p => p.StudentId == studentId && !inactiveStatuses.Contains(p.StatusId))
+                .FirstOrDefaultAsync();
+        }
     }
 }
