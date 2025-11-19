@@ -364,8 +364,7 @@ FodyWeavers.xsd
 appsettings.Development.json
 appsettings.json
 
-wwwroot/Images/
-wwwroot/Images/*
-
-
-!wwwroot/Images/.gitkeep
+# Images in API project
+ProjectCenter.API/wwwroot/Images/
+ProjectCenter.API/wwwroot/Images/*
+!ProjectCenter.API/wwwroot/Images/.gitkeep
