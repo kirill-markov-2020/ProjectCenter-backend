@@ -39,20 +39,18 @@ namespace ProjectCenter.Application.Services
         }
         public async Task<ProjectDto> CreateProjectAsync(CreateProjectRequestDto dto, int studentUserId)
         {
-            // Находим студента с его куратором
+         
             var student = await _userRepository.GetStudentByUserIdAsync(studentUserId)
                 ?? throw new StudentNotFoundException(studentUserId);
 
-            // Проверяем, что у студента есть куратор
             if (student.TeacherId == 0 || student.Teacher == null)
                 throw new InvalidOperationException("У студента не назначен куратор. Обратитесь к администратору.");
 
-            // Проверяем, нет ли у студента активного проекта
+       
             var activeProject = await _projectRepository.GetActiveProjectByStudentIdAsync(student.Id);
             if (activeProject != null)
                 throw new ActiveProjectExistsException(activeProject.Title);
 
-            // Создаем проект с куратором студента
             var project = new Project
             {
                 Title = dto.Title,
@@ -60,7 +58,7 @@ namespace ProjectCenter.Application.Services
                 TeacherId = student.TeacherId,
                 TypeId = dto.TypeId,
                 SubjectId = dto.SubjectId,
-                StatusId = 1, // Статус "Черновик" или "В работе"
+                StatusId = 1, 
                 IsPublic = dto.IsPublic,
                 FileProject = null,
                 FileDocumentation = null,

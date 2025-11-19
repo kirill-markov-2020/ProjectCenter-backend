@@ -97,7 +97,7 @@ namespace ProjectCenter.Infrastructure.Persistence.Repositories
         public async Task<Student?> GetStudentByUserIdAsync(int userId)
         {
             return await _context.Students
-                .Include(s => s.Teacher) // Важно: включаем куратора!
+                .Include(s => s.Teacher) 
                 .FirstOrDefaultAsync(s => s.UserId == userId);
         }
 

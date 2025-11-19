@@ -19,11 +19,13 @@ namespace ProjectCenter.Application.Services
         private readonly IUserRepository _userRepository;
 
         private readonly IMapper _mapper;
+        private readonly IFileService _fileService;
 
-        public UserService(IUserRepository userRepository, IMapper mapper)
+        public UserService(IUserRepository userRepository, IMapper mapper, IFileService fileService)
         {
             _userRepository = userRepository;
             _mapper = mapper;
+            _fileService = fileService;
         }
 
 
@@ -157,17 +159,31 @@ namespace ProjectCenter.Application.Services
             if (user == null)
                 throw new ArgumentException("Пользователь не найден.");
 
+            
+            var oldPhotoPath = user.Photo;
+
+        
+            if (dto.Photo != null && dto.Photo.Length > 0)
+            {
+          
+                user.Photo = await _fileService.SaveImageAsync(dto.Photo);
+
            
+                if (!string.IsNullOrEmpty(oldPhotoPath))
+                {
+                    _fileService.DeleteImage(oldPhotoPath);
+                }
+            }
+
+        
             if (!string.IsNullOrWhiteSpace(dto.Email))
             {
                 if (user.Email != dto.Email)
                 {
-                    
                     var emailErrors = EmailValidator.Validate(dto.Email);
                     if (emailErrors.Any())
                         throw new InvalidEmailException(string.Join(" ", emailErrors));
 
-                 
                     bool exists = await _userRepository.EmailExistsAsync(dto.Email);
                     if (exists)
                         throw new InvalidEmailException("Такой email уже используется.");
@@ -175,20 +191,13 @@ namespace ProjectCenter.Application.Services
                     user.Email = dto.Email;
                 }
             }
-
         
             if (!string.IsNullOrWhiteSpace(dto.PhoneNumber))
             {
                 if (!PhoneValidator.IsValid(dto.PhoneNumber))
-                    throw new InvalidPhoneNumberException("Некорректный формат телефона. Используйте формат +7XXXXXXXXXX или 8XXXXXXXXXX.");
+                    throw new InvalidPhoneNumberException("Некорректный формат телефона.");
 
                 user.Phone = dto.PhoneNumber;
-            }
-
-        
-            if (!string.IsNullOrWhiteSpace(dto.PhotoUrl))
-            {
-                user.Photo = dto.PhotoUrl;
             }
 
             await _userRepository.UpdateUserAsync(user);

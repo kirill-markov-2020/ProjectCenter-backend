@@ -66,7 +66,7 @@ namespace ProjectCenter.Infrastructure.Persistence.Repositories
         }
         public async Task<Project?> GetActiveProjectByStudentIdAsync(int studentId)
         {
-            // Статусы, которые считаются НЕ активными (можно создавать новый проект)
+            
             var inactiveStatuses = new[] { 10, 11, 12, 13, 17, 18 };
 
             return await _context.Projects

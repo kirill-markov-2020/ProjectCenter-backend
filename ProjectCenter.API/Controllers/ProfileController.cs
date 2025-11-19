@@ -29,7 +29,8 @@ namespace ProjectCenter.Api.Controllers
             return Ok(profile);
         }
         [HttpPut]
-        public async Task<IActionResult> UpdateMyProfile([FromBody] UpdateProfileRequestDto dto)
+        [Consumes("multipart/form-data")]
+        public async Task<IActionResult> UpdateMyProfile([FromForm] UpdateProfileRequestDto dto)
         {
             if (!HttpContext.Items.ContainsKey("UserId"))
                 return Unauthorized();
