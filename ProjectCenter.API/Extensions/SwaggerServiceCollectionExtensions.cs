@@ -1,5 +1,6 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
- using Microsoft.OpenApi.Models;
+using Microsoft.OpenApi.Models;
+using Swashbuckle.AspNetCore.SwaggerGen;
 
 namespace ProjectCenter.API.Extensions
 {
@@ -11,11 +12,12 @@ namespace ProjectCenter.API.Extensions
             {
                 c.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
                 {
-                    Description = "JWT Authorization header using the Bearer scheme. Example: 'Bearer {token}'",
+                    Description = "JWT Authorization. Введите токен без префикса 'Bearer'. Пример: eyJhbGciOiJIUzI1NiIs...",
                     Name = "Authorization",
                     In = ParameterLocation.Header,
-                    Type = SecuritySchemeType.ApiKey,
-                    Scheme = "Bearer"
+                    Type = SecuritySchemeType.Http,
+                    Scheme = "bearer", //注意：这里使用小写的 "bearer"
+                    BearerFormat = "JWT"
                 });
 
                 c.AddSecurityRequirement(new OpenApiSecurityRequirement
@@ -32,9 +34,30 @@ namespace ProjectCenter.API.Extensions
                         new string[] { }
                     }
                 });
+
+                // Опционально: можно добавить описание, что префикс не нужен
+                c.OperationFilter<SwaggerAuthOperationFilter>();
             });
 
             return services;
+        }
+    }
+
+    // Дополнительный класс для кастомизации отображения
+    public class SwaggerAuthOperationFilter : IOperationFilter
+    {
+        public void Apply(OpenApiOperation operation, OperationFilterContext context)
+        {
+            var hasAuthorize = context.MethodInfo.DeclaringType.GetCustomAttributes(true)
+                .Union(context.MethodInfo.GetCustomAttributes(true))
+                .OfType<Microsoft.AspNetCore.Authorization.AuthorizeAttribute>()
+                .Any();
+
+            if (hasAuthorize)
+            {
+                operation.Responses.TryAdd("401", new OpenApiResponse { Description = "Unauthorized" });
+                operation.Responses.TryAdd("403", new OpenApiResponse { Description = "Forbidden" });
+            }
         }
     }
 }

@@ -1,6 +1,7 @@
 ﻿using AutoMapper;
 using Microsoft.EntityFrameworkCore;
 using ProjectCenter.Application.DTOs;
+
 using ProjectCenter.Application.Interfaces;
 using ProjectCenter.Core.Entities;
 using ProjectCenter.Core.Exceptions;
@@ -71,5 +72,47 @@ namespace ProjectCenter.Application.Services
             var createdProject = await _projectRepository.GetProjectByIdAsync(project.Id);
             return _mapper.Map<ProjectDto>(createdProject);
         }
+        public async Task<ProjectDto> UpdateProjectAsync(int projectId, UpdateProjectRequestDto dto)
+        {
+            var project = await _projectRepository.GetProjectByIdAsync(projectId);
+
+            if (project == null)
+                throw new ProjectNotFoundException(projectId);
+
+            // Обновляем только те поля, которые переданы в DTO
+            if (!string.IsNullOrWhiteSpace(dto.Title))
+                project.Title = dto.Title;
+
+            if (dto.TeacherId.HasValue)
+                project.TeacherId = dto.TeacherId.Value;
+
+            if (dto.StatusId.HasValue)
+                project.StatusId = dto.StatusId.Value;
+
+            if (dto.TypeId.HasValue)
+                project.TypeId = dto.TypeId.Value;
+
+            if (dto.SubjectId.HasValue)
+                project.SubjectId = dto.SubjectId.Value;
+
+            if (!string.IsNullOrWhiteSpace(dto.FileProject))
+                project.FileProject = dto.FileProject;
+
+            if (!string.IsNullOrWhiteSpace(dto.FileDocumentation))
+                project.FileDocumentation = dto.FileDocumentation;
+
+            if (dto.IsPublic.HasValue)
+                project.IsPublic = dto.IsPublic.Value;
+
+            if (dto.DateDeadline.HasValue)
+                project.DateDeadline = dto.DateDeadline.Value;
+
+            await _projectRepository.UpdateProjectAsync(project);
+
+            // Возвращаем обновленный проект
+            var updatedProject = await _projectRepository.GetProjectByIdAsync(projectId);
+            return _mapper.Map<ProjectDto>(updatedProject);
+        }
+
     }
 }

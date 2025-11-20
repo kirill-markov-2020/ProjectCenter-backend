@@ -73,5 +73,10 @@ namespace ProjectCenter.Infrastructure.Persistence.Repositories
                 .Where(p => p.StudentId == studentId && !inactiveStatuses.Contains(p.StatusId))
                 .FirstOrDefaultAsync();
         }
+        public async Task UpdateProjectAsync(Project project)
+        {
+            _context.Projects.Update(project);
+            await _context.SaveChangesAsync();
+        }
     }
 }

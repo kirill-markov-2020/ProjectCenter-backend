@@ -1,5 +1,6 @@
 ﻿using ProjectCenter.Application.DTOs;
 
+
 public interface IProjectService
 {
     Task<List<ProjectDto>> GetProjectsForUserAsync(int userId, bool isAdmin);
@@ -7,4 +8,5 @@ public interface IProjectService
 
     
     Task<ProjectDto> CreateProjectAsync(CreateProjectRequestDto dto, int studentUserId);
+    Task<ProjectDto> UpdateProjectAsync(int projectId, UpdateProjectRequestDto dto);
 }

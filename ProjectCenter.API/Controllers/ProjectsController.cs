@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using ProjectCenter.Application.DTOs;
 using ProjectCenter.Application.Interfaces;
 using System.Security.Claims;
 
@@ -48,6 +49,15 @@ namespace ProjectCenter.Api.Controllers
 
             var project = await _projectService.CreateProjectAsync(dto, userId);
             return CreatedAtAction(nameof(GetProjectById), new { id = project.Id }, project);
+        }
+        
+
+        [HttpPut("{id}")]
+        [Authorize(Roles = "Admin")]
+        public async Task<IActionResult> UpdateProject(int id, [FromBody] UpdateProjectRequestDto dto)
+        {
+            var updatedProject = await _projectService.UpdateProjectAsync(id, dto);
+            return Ok(updatedProject);
         }
 
     }
