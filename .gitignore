@@ -367,4 +367,8 @@ appsettings.json
 # Images in API project
 ProjectCenter.API/wwwroot/Images/
 ProjectCenter.API/wwwroot/Images/*
+ProjectCenter.API/wwwroot/Documentation/
+ProjectCenter.API/wwwroot/Documentation/*
+ProjectCenter.API/wwwroot/Projects/
+ProjectCenter.API/wwwroot/Projects/*
 !ProjectCenter.API/wwwroot/Images/.gitkeep

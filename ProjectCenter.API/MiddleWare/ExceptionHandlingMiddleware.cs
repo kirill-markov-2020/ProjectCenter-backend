@@ -92,7 +92,15 @@ namespace ProjectCenter.API.Middleware
                     context.Response.StatusCode = (int)HttpStatusCode.Conflict; 
                     await context.Response.WriteAsJsonAsync(new { error = ex.Message, statusCode = 409 });
                     break;
+                case FileValidationException ex:
+                    context.Response.StatusCode = (int)HttpStatusCode.BadRequest;
+                    await context.Response.WriteAsJsonAsync(new { error = ex.Message, statusCode = 400 });
+                    break;
 
+                case ProjectAccessDeniedException ex:
+                    context.Response.StatusCode = (int)HttpStatusCode.Forbidden;
+                    await context.Response.WriteAsJsonAsync(new { error = ex.Message, statusCode = 403 });
+                    break;
 
 
                 default:

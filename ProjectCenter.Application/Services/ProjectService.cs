@@ -1,7 +1,7 @@
 ﻿using AutoMapper;
 using Microsoft.EntityFrameworkCore;
 using ProjectCenter.Application.DTOs;
-
+using ProjectCenter.Application.DTOs.UpdateProject;
 using ProjectCenter.Application.Interfaces;
 using ProjectCenter.Core.Entities;
 using ProjectCenter.Core.Exceptions;
@@ -13,12 +13,14 @@ namespace ProjectCenter.Application.Services
         private readonly IProjectRepository _projectRepository;
         private readonly IUserRepository _userRepository; 
         private readonly IMapper _mapper;
+        private readonly IFileService _fileService;
 
-        public ProjectService(IProjectRepository projectRepository, IUserRepository userRepository, IMapper mapper)
+        public ProjectService(IProjectRepository projectRepository, IUserRepository userRepository, IMapper mapper, IFileService fileService)
         {
             _projectRepository = projectRepository;
-            _userRepository = userRepository; 
+            _userRepository = userRepository;
             _mapper = mapper;
+            _fileService = fileService;
         }
 
         public async Task<List<ProjectDto>> GetProjectsForUserAsync(int userId, bool isAdmin)
@@ -106,6 +108,58 @@ namespace ProjectCenter.Application.Services
 
             if (dto.DateDeadline.HasValue)
                 project.DateDeadline = dto.DateDeadline.Value;
+
+            await _projectRepository.UpdateProjectAsync(project);
+
+            // Возвращаем обновленный проект
+            var updatedProject = await _projectRepository.GetProjectByIdAsync(projectId);
+            return _mapper.Map<ProjectDto>(updatedProject);
+        }
+        public async Task<ProjectDto> UpdateStudentProjectAsync(int projectId, UpdateStudentProjectRequestDto dto, int studentUserId)
+        {
+            var project = await _projectRepository.GetProjectByIdAsync(projectId);
+
+            if (project == null)
+                throw new ProjectNotFoundException(projectId);
+
+            // Проверяем, что проект принадлежит студенту
+            var student = await _userRepository.GetStudentByUserIdAsync(studentUserId);
+            if (student == null || project.StudentId != student.Id)
+                throw new ProjectAccessDeniedException();
+
+            // Обновляем файл проекта (архив)
+            if (dto.NewProjectFile != null)
+            {
+                // Удаляем старый файл если есть
+                if (!string.IsNullOrEmpty(project.FileProject))
+                    _fileService.DeleteProjectFile(project.FileProject);
+
+                project.FileProject = await _fileService.SaveProjectFileAsync(dto.NewProjectFile);
+            }
+            else if (dto.RemoveProjectFile == true && !string.IsNullOrEmpty(project.FileProject))
+            {
+                _fileService.DeleteProjectFile(project.FileProject);
+                project.FileProject = null;
+            }
+
+            // Обновляем файл документации (текстовый)
+            if (dto.NewDocumentationFile != null)
+            {
+                // Удаляем старый файл если есть
+                if (!string.IsNullOrEmpty(project.FileDocumentation))
+                    _fileService.DeleteDocumentationFile(project.FileDocumentation);
+
+                project.FileDocumentation = await _fileService.SaveDocumentationFileAsync(dto.NewDocumentationFile);
+            }
+            else if (dto.RemoveDocumentationFile == true && !string.IsNullOrEmpty(project.FileDocumentation))
+            {
+                _fileService.DeleteDocumentationFile(project.FileDocumentation);
+                project.FileDocumentation = null;
+            }
+
+            // Обновляем видимость
+            if (dto.IsPublic.HasValue)
+                project.IsPublic = dto.IsPublic.Value;
 
             await _projectRepository.UpdateProjectAsync(project);
 

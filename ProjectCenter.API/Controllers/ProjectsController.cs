@@ -1,6 +1,6 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using ProjectCenter.Application.DTOs;
+using ProjectCenter.Application.DTOs.UpdateProject;
 using ProjectCenter.Application.Interfaces;
 using System.Security.Claims;
 
@@ -57,6 +57,19 @@ namespace ProjectCenter.Api.Controllers
         public async Task<IActionResult> UpdateProject(int id, [FromBody] UpdateProjectRequestDto dto)
         {
             var updatedProject = await _projectService.UpdateProjectAsync(id, dto);
+            return Ok(updatedProject);
+        }
+        [HttpPut("my/{id}")]
+        [Authorize(Roles = "Student")]
+        [Consumes("multipart/form-data")]
+        public async Task<IActionResult> UpdateMyProject(int id, [FromForm] UpdateStudentProjectRequestDto dto)
+        {
+            if (!HttpContext.Items.ContainsKey("UserId"))
+                return Unauthorized();
+
+            int userId = (int)HttpContext.Items["UserId"];
+
+            var updatedProject = await _projectService.UpdateStudentProjectAsync(id, dto, userId);
             return Ok(updatedProject);
         }
 

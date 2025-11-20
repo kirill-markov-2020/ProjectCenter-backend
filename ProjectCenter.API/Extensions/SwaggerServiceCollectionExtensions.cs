@@ -12,11 +12,11 @@ namespace ProjectCenter.API.Extensions
             {
                 c.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
                 {
-                    Description = "JWT Authorization. Введите токен без префикса 'Bearer'. Пример: eyJhbGciOiJIUzI1NiIs...",
+                    Description = "JWT Authorization. Введите токен. Пример: eyJhbGciOiJIUzI1NiIs...",
                     Name = "Authorization",
                     In = ParameterLocation.Header,
                     Type = SecuritySchemeType.Http,
-                    Scheme = "bearer", //注意：这里使用小写的 "bearer"
+                    Scheme = "bearer",
                     BearerFormat = "JWT"
                 });
 
