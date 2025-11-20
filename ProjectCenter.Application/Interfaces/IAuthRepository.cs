@@ -1,9 +1,6 @@
 ﻿using ProjectCenter.Core.Entities;
 
-namespace ProjectCenter.Application.Interfaces
+public interface IAuthRepository
 {
-    public interface IAuthRepository
-    {
-        Task<User?> GetUserByLoginAndPasswordAsync(string login, string password);
-    }
+    Task<User?> GetUserByLoginAsync(string login);
 }

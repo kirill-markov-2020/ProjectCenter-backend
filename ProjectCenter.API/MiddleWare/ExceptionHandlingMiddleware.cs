@@ -57,11 +57,51 @@ namespace ProjectCenter.API.Middleware
                     context.Response.StatusCode = (int)HttpStatusCode.BadRequest;
                     await context.Response.WriteAsJsonAsync(new { error = ex.Message, statusCode = 400 });
                     break;
+                case InvalidOperationException ex:
+                    context.Response.StatusCode = (int)HttpStatusCode.BadRequest;
+                    await context.Response.WriteAsJsonAsync(new { error = ex.Message, statusCode = 400 });
+                    break;
+                case UserNotFoundException ex:
+                    context.Response.StatusCode = (int)HttpStatusCode.NotFound;
+                    await context.Response.WriteAsJsonAsync(new { error = ex.Message, statusCode = 404 });
+                    break;
 
                 case ArgumentException ex:
                     context.Response.StatusCode = (int)HttpStatusCode.BadRequest;
                     await context.Response.WriteAsJsonAsync(new { error = ex.Message, statusCode = 400 });
                     break;
+                case TeacherHasStudentsException ex:
+                    context.Response.StatusCode = (int)HttpStatusCode.BadRequest;
+                    await context.Response.WriteAsJsonAsync(new { error = ex.Message, statusCode = 400 });
+                    break;
+
+                case TokenExpiredException ex:
+                    context.Response.StatusCode = (int)HttpStatusCode.Unauthorized;
+                    await context.Response.WriteAsJsonAsync(new { error = ex.Message, statusCode = 401 });
+                    break;
+                case ProjectNotFoundException ex:
+                    context.Response.StatusCode = (int)HttpStatusCode.NotFound;
+                    await context.Response.WriteAsJsonAsync(new { error = ex.Message, statusCode = 404 });
+                    break;
+
+                case StudentNotFoundException ex:
+                    context.Response.StatusCode = (int)HttpStatusCode.NotFound;
+                    await context.Response.WriteAsJsonAsync(new { error = ex.Message, statusCode = 404 });
+                    break;
+                case ActiveProjectExistsException ex:
+                    context.Response.StatusCode = (int)HttpStatusCode.Conflict; 
+                    await context.Response.WriteAsJsonAsync(new { error = ex.Message, statusCode = 409 });
+                    break;
+                case FileValidationException ex:
+                    context.Response.StatusCode = (int)HttpStatusCode.BadRequest;
+                    await context.Response.WriteAsJsonAsync(new { error = ex.Message, statusCode = 400 });
+                    break;
+
+                case ProjectAccessDeniedException ex:
+                    context.Response.StatusCode = (int)HttpStatusCode.Forbidden;
+                    await context.Response.WriteAsJsonAsync(new { error = ex.Message, statusCode = 403 });
+                    break;
+
 
                 default:
                     context.Response.StatusCode = (int)HttpStatusCode.InternalServerError;
