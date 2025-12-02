@@ -78,5 +78,11 @@ namespace ProjectCenter.Infrastructure.Persistence.Repositories
             _context.Projects.Update(project);
             await _context.SaveChangesAsync();
         }
+        public async Task DeleteProjectAsync(Project project)
+        {
+            _context.Projects.Remove(project);
+            await _context.SaveChangesAsync();
+        }
+
     }
 }

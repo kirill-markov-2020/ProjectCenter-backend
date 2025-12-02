@@ -72,6 +72,14 @@ namespace ProjectCenter.Api.Controllers
             var updatedProject = await _projectService.UpdateStudentProjectAsync(id, dto, userId);
             return Ok(updatedProject);
         }
+        [HttpDelete("{id}")]
+        [Authorize(Roles = "Admin")]
+        public async Task<IActionResult> DeleteProject(int id)
+        {
+            await _projectService.DeleteProjectAsync(id);
+            return NoContent();
+        }
+
 
     }
 }

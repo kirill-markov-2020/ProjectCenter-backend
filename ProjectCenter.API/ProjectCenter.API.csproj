@@ -26,8 +26,8 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="wwwroot\Projects\" />
     <Folder Include="wwwroot\Documentation\" />
+    <Folder Include="wwwroot\Projects\" />
   </ItemGroup>
 
   <ProjectExtensions><VisualStudio><UserProperties properties_4launchsettings_1json__JsonSchema="" /></VisualStudio></ProjectExtensions>

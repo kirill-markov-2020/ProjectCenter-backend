@@ -10,5 +10,7 @@ namespace ProjectCenter.Application.Interfaces
         Task AddProjectAsync(Project project);
         Task<Project?> GetActiveProjectByStudentIdAsync(int studentId);
         Task UpdateProjectAsync(Project project);
+        Task DeleteProjectAsync(Project project);
+
     }
 }

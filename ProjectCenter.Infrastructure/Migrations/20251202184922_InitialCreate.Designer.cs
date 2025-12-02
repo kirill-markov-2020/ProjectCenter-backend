@@ -12,8 +12,8 @@ using ProjectCenter.Infrastructure.Persistence.Contexts;
 namespace ProjectCenter.Infrastructure.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20251120185353_Update")]
-    partial class Update
+    [Migration("20251202184922_InitialCreate")]
+    partial class InitialCreate
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)

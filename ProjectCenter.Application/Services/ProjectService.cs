@@ -167,6 +167,29 @@ namespace ProjectCenter.Application.Services
             var updatedProject = await _projectRepository.GetProjectByIdAsync(projectId);
             return _mapper.Map<ProjectDto>(updatedProject);
         }
+        public async Task DeleteProjectAsync(int projectId)
+        {
+            var project = await _projectRepository.GetProjectByIdAsync(projectId);
+            if (project == null)
+                throw new ArgumentException("Проект не найден");
+
+            // 1. Удаляем файл проекта
+            if (!string.IsNullOrEmpty(project.FileProject))
+                _fileService.DeleteProjectFile(project.FileProject);
+
+            // 2. Удаляем файл документации
+            if (!string.IsNullOrEmpty(project.FileDocumentation))
+                _fileService.DeleteDocumentationFile(project.FileDocumentation);
+
+            // 3. Удаляем комментарии
+            if (project.Comments != null && project.Comments.Any())
+                project.Comments.Clear(); // EF удалит каскадно
+
+            // 4. Удаляем сам проект
+            await _projectRepository.DeleteProjectAsync(project);
+        }
+
+
 
     }
 }
