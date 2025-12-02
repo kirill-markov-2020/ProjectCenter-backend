@@ -210,12 +210,10 @@ namespace ProjectCenter.Infrastructure.Migrations
                         .HasColumnType("datetime2");
 
                     b.Property<string>("FileDocumentation")
-                        .IsRequired()
                         .HasMaxLength(500)
                         .HasColumnType("nvarchar(500)");
 
                     b.Property<string>("FileProject")
-                        .IsRequired()
                         .HasMaxLength(500)
                         .HasColumnType("nvarchar(500)");
 
@@ -387,8 +385,8 @@ namespace ProjectCenter.Infrastructure.Migrations
 
                     b.Property<string>("Password")
                         .IsRequired()
-                        .HasMaxLength(50)
-                        .HasColumnType("nvarchar(50)");
+                        .HasMaxLength(150)
+                        .HasColumnType("nvarchar(150)");
 
                     b.Property<string>("Patronymic")
                         .HasMaxLength(50)

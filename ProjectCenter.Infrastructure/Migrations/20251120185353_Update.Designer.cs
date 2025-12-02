@@ -12,8 +12,8 @@ using ProjectCenter.Infrastructure.Persistence.Contexts;
 namespace ProjectCenter.Infrastructure.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20251106125341_UpdateDatabase")]
-    partial class UpdateDatabase
+    [Migration("20251120185353_Update")]
+    partial class Update
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -213,12 +213,10 @@ namespace ProjectCenter.Infrastructure.Migrations
                         .HasColumnType("datetime2");
 
                     b.Property<string>("FileDocumentation")
-                        .IsRequired()
                         .HasMaxLength(500)
                         .HasColumnType("nvarchar(500)");
 
                     b.Property<string>("FileProject")
-                        .IsRequired()
                         .HasMaxLength(500)
                         .HasColumnType("nvarchar(500)");
 
@@ -390,8 +388,8 @@ namespace ProjectCenter.Infrastructure.Migrations
 
                     b.Property<string>("Password")
                         .IsRequired()
-                        .HasMaxLength(50)
-                        .HasColumnType("nvarchar(50)");
+                        .HasMaxLength(150)
+                        .HasColumnType("nvarchar(150)");
 
                     b.Property<string>("Patronymic")
                         .HasMaxLength(50)
