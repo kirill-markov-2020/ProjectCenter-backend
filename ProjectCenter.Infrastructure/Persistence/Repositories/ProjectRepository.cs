@@ -59,5 +59,30 @@ namespace ProjectCenter.Infrastructure.Persistence.Repositories
                     .ThenInclude(c => c.User)
                 .FirstOrDefaultAsync(p => p.Id == id);
         }
+        public async Task AddProjectAsync(Project project)
+        {
+            _context.Projects.Add(project);
+            await _context.SaveChangesAsync();
+        }
+        public async Task<Project?> GetActiveProjectByStudentIdAsync(int studentId)
+        {
+            
+            var inactiveStatuses = new[] { 10, 11, 12, 13, 17, 18 };
+
+            return await _context.Projects
+                .Where(p => p.StudentId == studentId && !inactiveStatuses.Contains(p.StatusId))
+                .FirstOrDefaultAsync();
+        }
+        public async Task UpdateProjectAsync(Project project)
+        {
+            _context.Projects.Update(project);
+            await _context.SaveChangesAsync();
+        }
+        public async Task DeleteProjectAsync(Project project)
+        {
+            _context.Projects.Remove(project);
+            await _context.SaveChangesAsync();
+        }
+
     }
 }

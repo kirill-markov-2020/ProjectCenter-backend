@@ -51,6 +51,59 @@ namespace ProjectCenter.Infrastructure.Persistence.Repositories
                     .ThenInclude(g => g.Teacher)
                 .ToListAsync();
         }
+        public async Task<User?> GetByIdAsync(int id)
+        {
+            return await _context.Users
+                .Include(u => u.Student)
+                .Include(u => u.Teacher)
+                .FirstOrDefaultAsync(u => u.Id == id);
+        }
+
+        public async Task DeleteUserAsync(User user)
+        {
+            _context.Users.Remove(user);
+            await _context.SaveChangesAsync();
+        }
+
+        public async Task DeleteStudentAsync(Student student)
+        {
+            _context.Students.Remove(student);
+            await _context.SaveChangesAsync();
+        }
+
+        public async Task DeleteTeacherAsync(Teacher teacher)
+        {
+            _context.Teachers.Remove(teacher);
+            await _context.SaveChangesAsync();
+        }
+        public async Task<User?> GetFullUserByIdAsync(int id)
+        {
+            return await _context.Users
+                .Include(u => u.Student)
+                    .ThenInclude(s => s.Group)
+                .Include(u => u.Student)
+                    .ThenInclude(s => s.Teacher)
+                        .ThenInclude(t => t.User)
+                .Include(u => u.Teacher)
+                    .ThenInclude(t => t.Students)
+                        .ThenInclude(s => s.User)
+                .FirstOrDefaultAsync(u => u.Id == id);
+        }
+        public async Task UpdateUserAsync(User user)
+        {
+            _context.Users.Update(user);
+            await _context.SaveChangesAsync();
+        }
+        public async Task<Student?> GetStudentByUserIdAsync(int userId)
+        {
+            return await _context.Students
+                .Include(s => s.Teacher) 
+                .FirstOrDefaultAsync(s => s.UserId == userId);
+        }
+
+
+
+
 
 
     }

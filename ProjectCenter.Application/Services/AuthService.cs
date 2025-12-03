@@ -1,46 +1,45 @@
-﻿using ProjectCenter.Application.Interfaces;
-using ProjectCenter.Application.DTOs.Auth;
-using ProjectCenter.Core.Entities;
+﻿using ProjectCenter.Application.DTOs.Auth;
+using ProjectCenter.Application.Interfaces;
+using ProjectCenter.Core.Exceptions;
 
 namespace ProjectCenter.Application.Services
 {
     public class AuthService : IAuthService
     {
-        private readonly IAuthRepository _repository;
+        private readonly IAuthRepository _authRepository;
         private readonly IJwtService _jwtService;
 
-        public AuthService(IAuthRepository repository, IJwtService jwtService)
+        public AuthService(IAuthRepository authRepository, IJwtService jwtService)
         {
-            _repository = repository;
+            _authRepository = authRepository;
             _jwtService = jwtService;
         }
 
         public async Task<LoginResponseDto> LoginAsync(LoginRequestDto dto)
         {
-            var user = await _repository.GetUserByLoginAndPasswordAsync(dto.Login, dto.Password);
+            var user = await _authRepository.GetUserByLoginAsync(dto.Login);
 
             if (user == null)
-                throw new UnauthorizedAccessException("Неверный логин или пароль.");
+                throw new InvalidEmailException("Пользователь с таким логином не найден.");
+
+            if (!BCrypt.Net.BCrypt.Verify(dto.Password, user.Password))
+                throw new InvalidPasswordException("Неверный пароль.");
 
             var token = _jwtService.GenerateToken(user);
-
-            string role;
-            if (user.IsAdmin)
-                role = "Admin";
-            else if (user.Teacher != null)
-                role = "Teacher";
-            else if (user.Student != null)
-                role = "Student";
-            else
-                role = "User";
 
             return new LoginResponseDto
             {
                 Token = token,
-                Role = role,
-                FullName = $"{user.Surname} {user.Name}"
+                
+                Role = user.IsAdmin
+                    ? "Admin"
+                    : user.Teacher != null
+                        ? "Teacher"
+                        : user.Student != null
+                            ? "Student"
+                            : "User",
+                FullName = $"{user.Surname} {user.Name} {user.Patronymic}".Trim(),
             };
         }
-
     }
 }
