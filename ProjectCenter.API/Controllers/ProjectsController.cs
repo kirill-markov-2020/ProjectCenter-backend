@@ -79,6 +79,24 @@ namespace ProjectCenter.Api.Controllers
             await _projectService.DeleteProjectAsync(id);
             return NoContent();
         }
+        [HttpGet("my")]
+        [Authorize(Roles = "Student")]
+        public async Task<IActionResult> GetMyProject()
+        {
+            if (!HttpContext.Items.ContainsKey("UserId"))
+                return Unauthorized();
+
+            int userId = (int)HttpContext.Items["UserId"];
+
+            var project = await _projectService.GetMyProjectAsync(userId);
+
+            if (project == null)
+            {
+                return NotFound(new { message = "У вас нет активного проекта" });
+            }
+
+            return Ok(project);
+        }
 
 
     }

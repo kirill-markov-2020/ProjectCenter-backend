@@ -188,6 +188,30 @@ namespace ProjectCenter.Application.Services
             // 4. Удаляем сам проект
             await _projectRepository.DeleteProjectAsync(project);
         }
+        public async Task<ProjectDto?> GetMyProjectAsync(int studentUserId)
+        {
+            // 1. Получаем студента по UserId
+            var student = await _userRepository.GetStudentByUserIdAsync(studentUserId);
+            if (student == null)
+            {
+                // Если пользователь не является студентом, возвращаем null
+                // В контроллере это обработается как 404
+                return null;
+            }
+
+            // 2. Ищем активный проект студента
+            var activeProject = await _projectRepository.GetActiveProjectByStudentIdAsync(student.Id);
+            if (activeProject == null)
+            {
+                return null;
+            }
+
+            // 3. Загружаем полные данные проекта (с включениями)
+            var fullProject = await _projectRepository.GetProjectByIdAsync(activeProject.Id);
+
+            // 4. Маппим в DTO и возвращаем
+            return _mapper.Map<ProjectDto>(fullProject);
+        }
 
 
 
