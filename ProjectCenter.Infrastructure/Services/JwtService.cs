@@ -20,7 +20,7 @@ namespace ProjectCenter.Infrastructure.Services
         public string GenerateToken(User user)
         {
             var key = Encoding.UTF8.GetBytes(_configuration["Jwt:Key"]);
-
+            var expireMinutes = _configuration.GetValue<int>("Jwt:ExpireMinutes", 60);
             string role;
 
             if (user.IsAdmin)
@@ -43,7 +43,7 @@ namespace ProjectCenter.Infrastructure.Services
                 issuer: _configuration["Jwt:Issuer"],
                 audience: _configuration["Jwt:Audience"],
                 claims: claims,
-                expires: DateTime.UtcNow.AddHours(1),
+                expires: DateTime.UtcNow.AddMinutes(60),
                 signingCredentials: new SigningCredentials(new SymmetricSecurityKey(key), SecurityAlgorithms.HmacSha256)
             );
 
