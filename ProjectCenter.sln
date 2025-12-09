@@ -11,6 +11,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ProjectCenter.Application",
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ProjectCenter.Infrastructure", "ProjectCenter.Infrastructure\ProjectCenter.Infrastructure.csproj", "{614AEDBD-83BB-463B-A8A5-28F07BC50A89}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ProjectCenter.Test", "ProjectCenter.Test\ProjectCenter.Test.csproj", "{AFCFBD06-3F46-43C7-864F-98C8F52EAE41}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -33,6 +35,10 @@ Global
 		{614AEDBD-83BB-463B-A8A5-28F07BC50A89}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{614AEDBD-83BB-463B-A8A5-28F07BC50A89}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{614AEDBD-83BB-463B-A8A5-28F07BC50A89}.Release|Any CPU.Build.0 = Release|Any CPU
+		{AFCFBD06-3F46-43C7-864F-98C8F52EAE41}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{AFCFBD06-3F46-43C7-864F-98C8F52EAE41}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{AFCFBD06-3F46-43C7-864F-98C8F52EAE41}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{AFCFBD06-3F46-43C7-864F-98C8F52EAE41}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
