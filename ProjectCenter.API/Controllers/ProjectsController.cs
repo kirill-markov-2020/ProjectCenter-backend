@@ -73,7 +73,7 @@ namespace ProjectCenter.Api.Controllers
             return Ok(updatedProject);
         }
         [HttpDelete("{id}")]
-        [Authorize(Roles = "Admin")]
+        
         public async Task<IActionResult> DeleteProject(int id)
         {
             await _projectService.DeleteProjectAsync(id);
