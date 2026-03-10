@@ -112,7 +112,7 @@ namespace ProjectCenter.Infrastructure.Migrations
                     Name = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: false),
                     Patronymic = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: true),
                     Login = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: false),
-                    Password = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: false),
+                    Password = table.Column<string>(type: "nvarchar(150)", maxLength: 150, nullable: false),
                     IsAdmin = table.Column<bool>(type: "bit", nullable: false),
                     Phone = table.Column<string>(type: "nvarchar(20)", maxLength: 20, nullable: false),
                     Email = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: false),
@@ -121,27 +121,6 @@ namespace ProjectCenter.Infrastructure.Migrations
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_User", x => x.Id);
-                });
-
-            migrationBuilder.CreateTable(
-                name: "Comment",
-                columns: table => new
-                {
-                    Id = table.Column<int>(type: "int", nullable: false)
-                        .Annotation("SqlServer:Identity", "1, 1"),
-                    UserId = table.Column<int>(type: "int", nullable: false),
-                    Text = table.Column<string>(type: "nvarchar(1000)", maxLength: 1000, nullable: false),
-                    Date = table.Column<DateTime>(type: "datetime2", nullable: false)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_Comment", x => x.Id);
-                    table.ForeignKey(
-                        name: "FK_Comment_User_UserId",
-                        column: x => x.UserId,
-                        principalTable: "User",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
                 });
 
             migrationBuilder.CreateTable(
@@ -278,22 +257,15 @@ namespace ProjectCenter.Infrastructure.Migrations
                     StatusId = table.Column<int>(type: "int", nullable: false),
                     TypeId = table.Column<int>(type: "int", nullable: false),
                     SubjectId = table.Column<int>(type: "int", nullable: false),
-                    FileProject = table.Column<string>(type: "nvarchar(500)", maxLength: 500, nullable: false),
-                    FileDocumentation = table.Column<string>(type: "nvarchar(500)", maxLength: 500, nullable: false),
+                    FileProject = table.Column<string>(type: "nvarchar(500)", maxLength: 500, nullable: true),
+                    FileDocumentation = table.Column<string>(type: "nvarchar(500)", maxLength: 500, nullable: true),
                     IsPublic = table.Column<bool>(type: "bit", nullable: false),
                     DateDeadline = table.Column<DateTime>(type: "datetime2", nullable: false),
-                    CommentId = table.Column<int>(type: "int", nullable: true),
                     CreatedDate = table.Column<DateTime>(type: "datetime2", nullable: false)
                 },
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_Project", x => x.Id);
-                    table.ForeignKey(
-                        name: "FK_Project_Comment_CommentId",
-                        column: x => x.CommentId,
-                        principalTable: "Comment",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.SetNull);
                     table.ForeignKey(
                         name: "FK_Project_StatusProject_StatusId",
                         column: x => x.StatusId,
@@ -325,6 +297,39 @@ namespace ProjectCenter.Infrastructure.Migrations
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Restrict);
                 });
+
+            migrationBuilder.CreateTable(
+                name: "Comment",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    UserId = table.Column<int>(type: "int", nullable: false),
+                    ProjectId = table.Column<int>(type: "int", nullable: false),
+                    Text = table.Column<string>(type: "nvarchar(1000)", maxLength: 1000, nullable: false),
+                    Date = table.Column<DateTime>(type: "datetime2", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Comment", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_Comment_Project_ProjectId",
+                        column: x => x.ProjectId,
+                        principalTable: "Project",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_Comment_User_UserId",
+                        column: x => x.UserId,
+                        principalTable: "User",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Comment_ProjectId",
+                table: "Comment",
+                column: "ProjectId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_Comment_UserId",
@@ -360,11 +365,6 @@ namespace ProjectCenter.Infrastructure.Migrations
                 name: "IX_Notification_SenderId",
                 table: "Notification",
                 column: "SenderId");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_Project_CommentId",
-                table: "Project",
-                column: "CommentId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_Project_StatusId",
@@ -418,6 +418,9 @@ namespace ProjectCenter.Infrastructure.Migrations
         protected override void Down(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.DropTable(
+                name: "Comment");
+
+            migrationBuilder.DropTable(
                 name: "ConsultationSchedule");
 
             migrationBuilder.DropTable(
@@ -434,9 +437,6 @@ namespace ProjectCenter.Infrastructure.Migrations
 
             migrationBuilder.DropTable(
                 name: "DayOfWeekForConsultation");
-
-            migrationBuilder.DropTable(
-                name: "Comment");
 
             migrationBuilder.DropTable(
                 name: "StatusProject");

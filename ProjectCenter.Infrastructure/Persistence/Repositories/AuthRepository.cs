@@ -14,20 +14,12 @@ namespace ProjectCenter.Infrastructure.Persistence.Repositories
             _context = context;
         }
 
-        public async Task<User?> GetUserByLoginAndPasswordAsync(string login, string password)
+        public async Task<User?> GetUserByLoginAsync(string login)
         {
-            var user = await _context.Users
+            return await _context.Users
                 .Include(u => u.Teacher)
                 .Include(u => u.Student)
                 .FirstOrDefaultAsync(u => u.Login == login);
-
-            if (user == null)
-                return null;
-
-            if (BCrypt.Net.BCrypt.Verify(password, user.Password))
-                return user;
-
-            return null;
         }
     }
 }

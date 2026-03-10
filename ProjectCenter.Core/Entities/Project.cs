@@ -12,8 +12,8 @@ public class Project
     public int StatusId { get; set; }
     public int TypeId { get; set; }
     public int SubjectId { get; set; }
-    public string FileProject { get; set; }
-    public string FileDocumentation { get; set; }
+    public string? FileProject { get; set; }
+    public string? FileDocumentation { get; set; }
     public bool IsPublic { get; set; }
     public DateTime DateDeadline { get; set; }
     public DateTime CreatedDate { get; set; }

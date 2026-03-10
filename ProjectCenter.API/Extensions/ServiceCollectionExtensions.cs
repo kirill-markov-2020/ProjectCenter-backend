@@ -2,6 +2,7 @@
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.IdentityModel.Tokens;
+using ProjectCenter.Core.Exceptions;
 using System.Text;
 
 namespace ProjectCenter.API.Extensions
@@ -19,15 +20,32 @@ namespace ProjectCenter.API.Extensions
                     {
                         ValidateIssuer = true,
                         ValidateAudience = true,
-                        ValidateLifetime = true,
+                        ValidateLifetime = true,                
                         ValidateIssuerSigningKey = true,
+
                         ValidIssuer = configuration["Jwt:Issuer"],
                         ValidAudience = configuration["Jwt:Audience"],
-                        IssuerSigningKey = new SymmetricSecurityKey(key)
+                        IssuerSigningKey = new SymmetricSecurityKey(key),
+
+                        ClockSkew = TimeSpan.Zero          
                     };
+                    options.Events = new JwtBearerEvents
+                    {
+                        OnAuthenticationFailed = context =>
+                        {
+                            if (context.Exception is SecurityTokenExpiredException)
+                            {
+                                throw new TokenExpiredException("Срок действия токена истёк. Пожалуйста, войдите снова.");
+                            }
+
+                            return Task.CompletedTask;
+                        }
+                    };
+
                 });
 
             return services;
         }
+
     }
 }
