@@ -26,6 +26,9 @@ namespace ProjectCenter.Infrastructure.Persistence.Repositories
                 .Include(p => p.Subject)
                 .Include(p => p.Comments)
                     .ThenInclude(c => c.User)
+                .Include(p => p.Grade)
+                    .ThenInclude(g => g.Teacher)
+                        .ThenInclude(t => t.User)
                 .ToListAsync();
         }
 
@@ -42,6 +45,9 @@ namespace ProjectCenter.Infrastructure.Persistence.Repositories
                 .Include(p => p.Subject)
                 .Include(p => p.Comments)
                     .ThenInclude(c => c.User)
+                .Include(p => p.Grade)
+                    .ThenInclude(g => g.Teacher)
+                        .ThenInclude(t => t.User)
                 .ToListAsync();
         }
 
@@ -57,6 +63,9 @@ namespace ProjectCenter.Infrastructure.Persistence.Repositories
                 .Include(p => p.Subject)
                 .Include(p => p.Comments)
                     .ThenInclude(c => c.User)
+                .Include(p => p.Grade)
+                    .ThenInclude(g => g.Teacher)
+                        .ThenInclude(t => t.User)
                 .FirstOrDefaultAsync(p => p.Id == id);
         }
         public async Task AddProjectAsync(Project project)
