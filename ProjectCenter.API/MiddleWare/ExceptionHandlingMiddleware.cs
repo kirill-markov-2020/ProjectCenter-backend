@@ -102,7 +102,10 @@ namespace ProjectCenter.API.Middleware
                     await context.Response.WriteAsJsonAsync(new { error = ex.Message, statusCode = 403 });
                     break;
 
-
+                case AccessDeniedException ex:
+                    context.Response.StatusCode = (int)HttpStatusCode.Forbidden;
+                    await context.Response.WriteAsJsonAsync(new { error = ex.Message, statusCode = 403 });
+                    break;
                 default:
                     context.Response.StatusCode = (int)HttpStatusCode.InternalServerError;
                     await context.Response.WriteAsJsonAsync(new { error = "Произошла внутренняя ошибка сервера.", statusCode = 500 });

@@ -212,6 +212,44 @@ namespace ProjectCenter.Application.Services
             // 4. Маппим в DTO и возвращаем
             return _mapper.Map<ProjectDto>(fullProject);
         }
+        public async Task AddCommentAsync(int projectId, int userId, string text)
+        {
+            if (string.IsNullOrWhiteSpace(text))
+                throw new ArgumentException("Комментарий не может быть пустым.");
+
+            // 🔹 1. Получаем пользователя
+            var user = await _userRepository.GetFullUserByIdAsync(userId);
+            if (user == null)
+                throw new UserNotFoundException(userId);
+
+            // 🔹 2. Проверка: преподаватель ли
+            if (user.Teacher == null)
+                throw new AccessDeniedException("Только преподаватель может оставлять комментарии.");
+
+            // 🔹 3. Получаем проект
+            var project = await _projectRepository.GetProjectByIdAsync(projectId);
+            if (project == null)
+                throw new ProjectNotFoundException(projectId);
+
+            // 🔹 4. Проверка: это его студент?
+            if (project.TeacherId != user.Teacher.Id)
+                throw new AccessDeniedException("Вы можете комментировать только проекты своих студентов.");
+
+            // 🔹 5. Создаём комментарий
+            var comment = new Comment
+            {
+                Text = text,
+                Date = DateTime.UtcNow,
+                UserId = user.Id,
+                ProjectId = project.Id
+            };
+
+            // 🔹 6. Добавляем в проект
+            project.Comments.Add(comment);
+
+            // 🔹 7. Сохраняем
+            await _projectRepository.UpdateProjectAsync(project);
+        }
 
 
 

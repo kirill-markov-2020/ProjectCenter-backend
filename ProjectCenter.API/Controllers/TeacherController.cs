@@ -22,5 +22,18 @@ namespace ProjectCenter.Api.Controllers
             var teachers = await _teacherService.GetAllTeachersAsync();
             return Ok(teachers);
         }
+        [HttpGet("students")]
+        
+        public async Task<IActionResult> GetMyStudents()
+        {
+            if (!HttpContext.Items.ContainsKey("UserId"))
+                return Unauthorized();
+
+            int userId = (int)HttpContext.Items["UserId"];
+
+            var students = await _teacherService.GetMyStudentsAsync(userId);
+
+            return Ok(students);
+        }
     }
 }

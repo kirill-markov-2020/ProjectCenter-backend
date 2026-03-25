@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using ProjectCenter.Application.DTOs;
 using ProjectCenter.Application.DTOs.UpdateProject;
 using ProjectCenter.Application.Interfaces;
 using System.Security.Claims;
@@ -96,6 +97,19 @@ namespace ProjectCenter.Api.Controllers
             }
 
             return Ok(project);
+        }
+        [HttpPost("{id}/comments")]
+        [Authorize]
+        public async Task<IActionResult> AddComment(int id, [FromBody] CreateCommentRequestDto dto)
+        {
+            if (!HttpContext.Items.ContainsKey("UserId"))
+                return Unauthorized();
+
+            int userId = (int)HttpContext.Items["UserId"];
+
+            await _projectService.AddCommentAsync(id, userId, dto.Text);
+
+            return Ok(new { message = "Комментарий добавлен" });
         }
 
 

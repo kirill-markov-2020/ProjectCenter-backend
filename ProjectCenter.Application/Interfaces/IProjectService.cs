@@ -1,5 +1,4 @@
-﻿using ProjectCenter.Application.DTOs;
-using ProjectCenter.Application.DTOs.UpdateProject;
+﻿using ProjectCenter.Application.DTOs.UpdateProject;
 
 
 public interface IProjectService
@@ -13,5 +12,6 @@ public interface IProjectService
     Task<ProjectDto> UpdateStudentProjectAsync(int projectId, UpdateStudentProjectRequestDto dto, int studentUserId);
     Task DeleteProjectAsync(int projectId);
     Task<ProjectDto?> GetMyProjectAsync(int studentUserId);
+    Task AddCommentAsync(int projectId, int userId, string text);
 
 }
