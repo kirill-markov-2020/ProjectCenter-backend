@@ -16,7 +16,7 @@ namespace ProjectCenter.Infrastructure.Persistence.Configurations
         {
             public void Configure(EntityTypeBuilder<Grade> builder)
             {
-                builder.ToTable("Grades");
+                builder.ToTable("Grade");
 
                 builder.HasKey(g => g.Id);
 
@@ -37,7 +37,7 @@ namespace ProjectCenter.Infrastructure.Persistence.Configurations
 
                 // Связь с Teacher
                 builder.HasOne(g => g.Teacher)
-                    .WithMany(t => t.Grades)
+                    .WithMany(t => t.Grade)
                     .HasForeignKey(g => g.TeacherId)
                     .OnDelete(DeleteBehavior.Restrict);
             }

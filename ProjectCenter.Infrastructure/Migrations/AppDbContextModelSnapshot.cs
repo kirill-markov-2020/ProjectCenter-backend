@@ -177,7 +177,7 @@ namespace ProjectCenter.Infrastructure.Migrations
 
                     b.HasIndex("TeacherId");
 
-                    b.ToTable("Grades", (string)null);
+                    b.ToTable("Grade", (string)null);
                 });
 
             modelBuilder.Entity("ProjectCenter.Core.Entities.Group", b =>
@@ -508,7 +508,7 @@ namespace ProjectCenter.Infrastructure.Migrations
                         .IsRequired();
 
                     b.HasOne("ProjectCenter.Core.Entities.Teacher", "Teacher")
-                        .WithMany("Grades")
+                        .WithMany("Grade")
                         .HasForeignKey("TeacherId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
@@ -665,7 +665,7 @@ namespace ProjectCenter.Infrastructure.Migrations
                 {
                     b.Navigation("ConsultationSchedules");
 
-                    b.Navigation("Grades");
+                    b.Navigation("Grade");
 
                     b.Navigation("Projects");
 

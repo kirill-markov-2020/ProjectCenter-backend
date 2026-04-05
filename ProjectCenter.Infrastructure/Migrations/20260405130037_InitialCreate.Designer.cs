@@ -12,8 +12,8 @@ using ProjectCenter.Infrastructure.Persistence.Contexts;
 namespace ProjectCenter.Infrastructure.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20260324165858_initialcerajdf")]
-    partial class initialcerajdf
+    [Migration("20260405130037_InitialCreate")]
+    partial class InitialCreate
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -180,7 +180,7 @@ namespace ProjectCenter.Infrastructure.Migrations
 
                     b.HasIndex("TeacherId");
 
-                    b.ToTable("Grades", (string)null);
+                    b.ToTable("Grade", (string)null);
                 });
 
             modelBuilder.Entity("ProjectCenter.Core.Entities.Group", b =>
@@ -511,7 +511,7 @@ namespace ProjectCenter.Infrastructure.Migrations
                         .IsRequired();
 
                     b.HasOne("ProjectCenter.Core.Entities.Teacher", "Teacher")
-                        .WithMany("Grades")
+                        .WithMany("Grade")
                         .HasForeignKey("TeacherId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
@@ -668,7 +668,7 @@ namespace ProjectCenter.Infrastructure.Migrations
                 {
                     b.Navigation("ConsultationSchedules");
 
-                    b.Navigation("Grades");
+                    b.Navigation("Grade");
 
                     b.Navigation("Projects");
 

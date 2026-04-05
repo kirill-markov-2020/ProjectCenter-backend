@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace ProjectCenter.Infrastructure.Migrations
 {
     /// <inheritdoc />
-    public partial class initialcerajdf : Migration
+    public partial class InitialCreate : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -327,7 +327,7 @@ namespace ProjectCenter.Infrastructure.Migrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "Grades",
+                name: "Grade",
                 columns: table => new
                 {
                     Id = table.Column<int>(type: "int", nullable: false)
@@ -340,15 +340,15 @@ namespace ProjectCenter.Infrastructure.Migrations
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_Grades", x => x.Id);
+                    table.PrimaryKey("PK_Grade", x => x.Id);
                     table.ForeignKey(
-                        name: "FK_Grades_Project_ProjectId",
+                        name: "FK_Grade_Project_ProjectId",
                         column: x => x.ProjectId,
                         principalTable: "Project",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                     table.ForeignKey(
-                        name: "FK_Grades_Teacher_TeacherId",
+                        name: "FK_Grade_Teacher_TeacherId",
                         column: x => x.TeacherId,
                         principalTable: "Teacher",
                         principalColumn: "Id",
@@ -386,14 +386,14 @@ namespace ProjectCenter.Infrastructure.Migrations
                 column: "TeacherId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_Grades_ProjectId",
-                table: "Grades",
+                name: "IX_Grade_ProjectId",
+                table: "Grade",
                 column: "ProjectId",
                 unique: true);
 
             migrationBuilder.CreateIndex(
-                name: "IX_Grades_TeacherId",
-                table: "Grades",
+                name: "IX_Grade_TeacherId",
+                table: "Grade",
                 column: "TeacherId");
 
             migrationBuilder.CreateIndex(
@@ -464,7 +464,7 @@ namespace ProjectCenter.Infrastructure.Migrations
                 name: "ConsultationSchedule");
 
             migrationBuilder.DropTable(
-                name: "Grades");
+                name: "Grade");
 
             migrationBuilder.DropTable(
                 name: "Notification");
