@@ -19,6 +19,7 @@ namespace ProjectCenter.Api.Controllers
             _projectService = projectService;
         }
 
+        
         [HttpGet]
         public async Task<IActionResult> GetProjects()
         {
@@ -30,7 +31,7 @@ namespace ProjectCenter.Api.Controllers
 
             bool isAdmin = role == "Admin";
 
-            var projects = await _projectService.GetProjectsForUserAsync(userId, isAdmin);
+            var projects = await _projectService.GetProjectsForUserAsync(userId, isAdmin, role);
             return Ok(projects);
         }
         [HttpGet("{id}")]

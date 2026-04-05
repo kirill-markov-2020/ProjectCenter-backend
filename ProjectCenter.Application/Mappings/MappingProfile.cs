@@ -23,7 +23,6 @@ namespace ProjectCenter.Application.Mappings
                 .ForMember(dest => dest.SubjectName, opt => opt.MapFrom(src => src.Subject.Name))
                 .ForMember(dest => dest.Comments, opt => opt.MapFrom(src => src.Comments))
 
-                // 👇 ВАЖНО: Маппинг оценки
                 .ForMember(dest => dest.GradeValue, opt => opt.MapFrom(src => src.Grade != null ? src.Grade.Value : (int?)null))
                 .ForMember(dest => dest.GradeComment, opt => opt.MapFrom(src => src.Grade != null ? src.Grade.Comment : null))
                 .ForMember(dest => dest.GradeDate, opt => opt.MapFrom(src => src.Grade != null ? src.Grade.CreatedAt : (DateTime?)null))

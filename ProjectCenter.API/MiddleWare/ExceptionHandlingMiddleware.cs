@@ -106,6 +106,15 @@ namespace ProjectCenter.API.Middleware
                     context.Response.StatusCode = (int)HttpStatusCode.Forbidden;
                     await context.Response.WriteAsJsonAsync(new { error = ex.Message, statusCode = 403 });
                     break;
+                case NoProjectsForTeacherException ex:
+                    context.Response.StatusCode = (int)HttpStatusCode.NotFound;
+                    await context.Response.WriteAsJsonAsync(new
+                    {
+                        error = ex.Message,
+                        statusCode = 404,
+                        
+                    });
+                    break;
                 default:
                     context.Response.StatusCode = (int)HttpStatusCode.InternalServerError;
                     await context.Response.WriteAsJsonAsync(new { error = "Произошла внутренняя ошибка сервера.", statusCode = 500 });
