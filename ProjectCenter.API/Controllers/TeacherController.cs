@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using ProjectCenter.Application.Interfaces;
+using ProjectCenter.Application.Services;
 
 namespace ProjectCenter.Api.Controllers
 {
@@ -10,10 +11,12 @@ namespace ProjectCenter.Api.Controllers
     public class TeacherController : ControllerBase
     {
         private readonly ITeacherService _teacherService;
+        private readonly IProjectService _projectService;
 
-        public TeacherController(ITeacherService teacherService)
+        public TeacherController(ITeacherService teacherService, IProjectService projectService)
         {
             _teacherService = teacherService;
+            _projectService = projectService;
         }
 
         [HttpGet]
@@ -34,6 +37,17 @@ namespace ProjectCenter.Api.Controllers
             var data = await _teacherService.GetMyStudentsAsync(userId);
 
             return Ok(data);
+        }
+        [HttpGet("students/projects/{projectId}")]
+        public async Task<IActionResult> GetStudentProjectById(int projectId)
+        {
+            if (!HttpContext.Items.ContainsKey("UserId"))
+                return Unauthorized();
+
+            int userId = (int)HttpContext.Items["UserId"];
+
+            var project = await _projectService.GetTeacherStudentProjectAsync(projectId, userId);
+            return Ok(project);
         }
     }
     }

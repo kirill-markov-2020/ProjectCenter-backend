@@ -111,6 +111,25 @@ namespace ProjectCenter.Infrastructure.Persistence.Repositories
             _context.Projects.Remove(project);
             await _context.SaveChangesAsync();
         }
+        // ProjectCenter.Infrastructure/Persistence/Repositories/ProjectRepository.cs
+        public async Task<Project?> GetProjectByIdAndTeacherIdAsync(int projectId, int teacherId)
+        {
+            return await _context.Projects
+                .Where(p => p.Id == projectId && p.TeacherId == teacherId)
+                .Include(p => p.Student)
+                    .ThenInclude(s => s.User)
+                .Include(p => p.Teacher)
+                    .ThenInclude(t => t.User)
+                .Include(p => p.Status)
+                .Include(p => p.Type)
+                .Include(p => p.Subject)
+                .Include(p => p.Comments)
+                    .ThenInclude(c => c.User)
+                .Include(p => p.Grade)
+                    .ThenInclude(g => g.Teacher)
+                        .ThenInclude(t => t.User)
+                .FirstOrDefaultAsync();
+        }
 
     }
 }

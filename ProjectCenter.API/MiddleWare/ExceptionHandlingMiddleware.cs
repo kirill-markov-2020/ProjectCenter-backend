@@ -106,6 +106,10 @@ namespace ProjectCenter.API.Middleware
                     context.Response.StatusCode = (int)HttpStatusCode.Forbidden;
                     await context.Response.WriteAsJsonAsync(new { error = ex.Message, statusCode = 403 });
                     break;
+                case NoCuratorProjectException ex:
+                    context.Response.StatusCode = (int)HttpStatusCode.Forbidden;
+                    await context.Response.WriteAsJsonAsync(new { error = ex.Message, statusCode = 403 });
+                    break;
                 case NoProjectsForTeacherException ex:
                     context.Response.StatusCode = (int)HttpStatusCode.NotFound;
                     await context.Response.WriteAsJsonAsync(new

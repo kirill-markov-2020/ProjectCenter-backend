@@ -270,6 +270,23 @@ namespace ProjectCenter.Application.Services
             // 🔹 7. Сохраняем
             await _projectRepository.UpdateProjectAsync(project);
         }
+        // ProjectCenter.Application/Services/ProjectService.cs
+        public async Task<ProjectDto> GetTeacherStudentProjectAsync(int projectId, int teacherUserId)
+        {
+            // 1. Получаем преподавателя по UserId
+            var teacher = await _userRepository.GetFullUserByIdAsync(teacherUserId);
+            if (teacher?.Teacher == null)
+                throw new AccessDeniedException("Вы не являетесь преподавателем");
+
+            // 2. Ищем проект, который принадлежит студенту этого преподавателя
+            var project = await _projectRepository.GetProjectByIdAndTeacherIdAsync(projectId, teacher.Teacher.Id);
+
+            if (project == null)
+                throw new NoCuratorProjectException(projectId);
+
+            // 3. Возвращаем DTO
+            return _mapper.Map<ProjectDto>(project);
+        }
 
 
 
