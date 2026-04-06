@@ -284,6 +284,29 @@ namespace ProjectCenter.Application.Services
             return _mapper.Map<ProjectDto>(project);
         }
 
+        public async Task<ProjectDto> UpdateProjectByTeacherAsync(int projectId, UpdateTeacherProjectRequestDto dto, int teacherUserId)
+        {
+            var teacher = await _userRepository.GetFullUserByIdAsync(teacherUserId);
+            if (teacher?.Teacher == null)
+                throw new AccessDeniedException("Вы не являетесь преподавателем");
+            var project = await _projectRepository.GetProjectByIdAsync(projectId);
+            if (project == null)
+                throw new ProjectNotFoundException(projectId);
+            if (project.TeacherId != teacher.Teacher.Id)
+                throw new AccessDeniedException("Вы можете редактировать только проекты своих студентов.");
+            if (!string.IsNullOrWhiteSpace(dto.Title))
+                project.Title = dto.Title;
+            if (dto.TypeId.HasValue)
+                project.TypeId = dto.TypeId.Value;
+            if (dto.SubjectId.HasValue)
+                project.SubjectId = dto.SubjectId.Value;
+            if (dto.DateDeadline.HasValue)
+                project.DateDeadline = dto.DateDeadline.Value;
+            await _projectRepository.UpdateProjectAsync(project);
+            var updatedProject = await _projectRepository.GetProjectByIdAsync(projectId);
+            return _mapper.Map<ProjectDto>(updatedProject);
+        }
+
 
 
     }

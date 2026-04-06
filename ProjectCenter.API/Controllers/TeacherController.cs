@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using ProjectCenter.Application.DTOs.UpdateProject;
 using ProjectCenter.Application.Interfaces;
 using ProjectCenter.Application.Services;
 
@@ -48,6 +49,17 @@ namespace ProjectCenter.Api.Controllers
 
             var project = await _projectService.GetTeacherStudentProjectAsync(projectId, userId);
             return Ok(project);
+        }
+        [HttpPut("students/projects/{projectId}")]
+        public async Task<IActionResult> UpdateStudentProject(int projectId, [FromBody] UpdateTeacherProjectRequestDto dto)
+        {
+            if (!HttpContext.Items.ContainsKey("UserId"))
+                return Unauthorized();
+
+            int userId = (int)HttpContext.Items["UserId"];
+
+            var updatedProject = await _projectService.UpdateProjectByTeacherAsync(projectId, dto, userId);
+            return Ok(updatedProject);
         }
     }
     }

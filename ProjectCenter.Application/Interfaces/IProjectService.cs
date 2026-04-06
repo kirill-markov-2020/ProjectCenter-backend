@@ -14,5 +14,6 @@ public interface IProjectService
     Task<ProjectDto?> GetMyProjectAsync(int studentUserId);
     Task AddCommentAsync(int projectId, int userId, string text);
     Task<ProjectDto> GetTeacherStudentProjectAsync(int projectId, int teacherUserId);
+    Task<ProjectDto> UpdateProjectByTeacherAsync(int projectId, UpdateTeacherProjectRequestDto dto, int teacherUserId);
 
 }

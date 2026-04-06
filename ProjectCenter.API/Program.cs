@@ -6,6 +6,7 @@ using ProjectCenter.Application.Interfaces;
 using ProjectCenter.Application.Mappings;
 using ProjectCenter.Application.Services;
 using ProjectCenter.Core.Entities;
+using ProjectCenter.Core.Services;
 using ProjectCenter.Infrastructure.Persistence.Contexts;
 using ProjectCenter.Infrastructure.Persistence.Repositories;
 using ProjectCenter.Infrastructure.Services;
@@ -33,7 +34,11 @@ builder.Services.AddScoped<IFileService, FileService>();
 
 
 
-
+builder.Services.AddControllers()
+    .AddJsonOptions(options =>
+    {
+        options.JsonSerializerOptions.Converters.Add(new CustomDateTimeConverter());
+    });
 
 builder.Services.AddAutoMapper(cfg =>
 {
