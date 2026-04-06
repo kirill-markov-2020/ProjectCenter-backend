@@ -207,12 +207,16 @@ namespace ProjectCenter.Infrastructure.Migrations
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
                     b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("datetime2");
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("datetime2")
+                        .HasDefaultValueSql("GETUTCDATE()");
+
+                    b.Property<bool>("IsRead")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bit")
+                        .HasDefaultValue(false);
 
                     b.Property<int>("RecipientId")
-                        .HasColumnType("int");
-
-                    b.Property<int>("SenderId")
                         .HasColumnType("int");
 
                     b.Property<string>("Text")
@@ -220,11 +224,27 @@ namespace ProjectCenter.Infrastructure.Migrations
                         .HasMaxLength(1000)
                         .HasColumnType("nvarchar(1000)");
 
+                    b.Property<string>("Title")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
+                    b.Property<int>("TypeId")
+                        .HasColumnType("int");
+
                     b.HasKey("Id");
 
-                    b.HasIndex("RecipientId");
+                    b.HasIndex("CreatedAt")
+                        .HasDatabaseName("IX_Notification_CreatedAt");
 
-                    b.HasIndex("SenderId");
+                    b.HasIndex("IsRead")
+                        .HasDatabaseName("IX_Notification_IsRead");
+
+                    b.HasIndex("RecipientId")
+                        .HasDatabaseName("IX_Notification_RecipientId");
+
+                    b.HasIndex("TypeId")
+                        .HasDatabaseName("IX_Notification_TypeId");
 
                     b.ToTable("Notification", (string)null);
                 });
@@ -371,6 +391,28 @@ namespace ProjectCenter.Infrastructure.Migrations
                         .IsUnique();
 
                     b.ToTable("Teacher", (string)null);
+                });
+
+            modelBuilder.Entity("ProjectCenter.Core.Entities.TypeNotification", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("Name")
+                        .IsUnique()
+                        .HasDatabaseName("UX_TypeNotification_Name");
+
+                    b.ToTable("TypeNotification", (string)null);
                 });
 
             modelBuilder.Entity("ProjectCenter.Core.Entities.TypeProject", b =>
@@ -523,18 +565,18 @@ namespace ProjectCenter.Infrastructure.Migrations
                     b.HasOne("ProjectCenter.Core.Entities.User", "Recipient")
                         .WithMany("ReceivedNotifications")
                         .HasForeignKey("RecipientId")
-                        .OnDelete(DeleteBehavior.Restrict)
+                        .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("ProjectCenter.Core.Entities.User", "Sender")
-                        .WithMany("SentNotifications")
-                        .HasForeignKey("SenderId")
+                    b.HasOne("ProjectCenter.Core.Entities.TypeNotification", "Type")
+                        .WithMany("Notifications")
+                        .HasForeignKey("TypeId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
                     b.Navigation("Recipient");
 
-                    b.Navigation("Sender");
+                    b.Navigation("Type");
                 });
 
             modelBuilder.Entity("ProjectCenter.Core.Entities.Project", b =>
@@ -672,6 +714,11 @@ namespace ProjectCenter.Infrastructure.Migrations
                     b.Navigation("Students");
                 });
 
+            modelBuilder.Entity("ProjectCenter.Core.Entities.TypeNotification", b =>
+                {
+                    b.Navigation("Notifications");
+                });
+
             modelBuilder.Entity("ProjectCenter.Core.Entities.TypeProject", b =>
                 {
                     b.Navigation("Projects");
@@ -682,8 +729,6 @@ namespace ProjectCenter.Infrastructure.Migrations
                     b.Navigation("Comments");
 
                     b.Navigation("ReceivedNotifications");
-
-                    b.Navigation("SentNotifications");
 
                     b.Navigation("Student")
                         .IsRequired();

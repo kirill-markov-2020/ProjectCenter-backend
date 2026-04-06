@@ -90,6 +90,19 @@ namespace ProjectCenter.Infrastructure.Migrations
                 });
 
             migrationBuilder.CreateTable(
+                name: "TypeNotification",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    Name = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_TypeNotification", x => x.Id);
+                });
+
+            migrationBuilder.CreateTable(
                 name: "TypeProject",
                 columns: table => new
                 {
@@ -129,26 +142,28 @@ namespace ProjectCenter.Infrastructure.Migrations
                 {
                     Id = table.Column<int>(type: "int", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
-                    SenderId = table.Column<int>(type: "int", nullable: false),
                     RecipientId = table.Column<int>(type: "int", nullable: false),
+                    Title = table.Column<string>(type: "nvarchar(200)", maxLength: 200, nullable: false),
                     Text = table.Column<string>(type: "nvarchar(1000)", maxLength: 1000, nullable: false),
-                    CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false)
+                    CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false, defaultValueSql: "GETUTCDATE()"),
+                    IsRead = table.Column<bool>(type: "bit", nullable: false, defaultValue: false),
+                    TypeId = table.Column<int>(type: "int", nullable: false)
                 },
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_Notification", x => x.Id);
                     table.ForeignKey(
+                        name: "FK_Notification_TypeNotification_TypeId",
+                        column: x => x.TypeId,
+                        principalTable: "TypeNotification",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Restrict);
+                    table.ForeignKey(
                         name: "FK_Notification_User_RecipientId",
                         column: x => x.RecipientId,
                         principalTable: "User",
                         principalColumn: "Id",
-                        onDelete: ReferentialAction.Restrict);
-                    table.ForeignKey(
-                        name: "FK_Notification_User_SenderId",
-                        column: x => x.SenderId,
-                        principalTable: "User",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Restrict);
+                        onDelete: ReferentialAction.Cascade);
                 });
 
             migrationBuilder.CreateTable(
@@ -397,14 +412,24 @@ namespace ProjectCenter.Infrastructure.Migrations
                 column: "TeacherId");
 
             migrationBuilder.CreateIndex(
+                name: "IX_Notification_CreatedAt",
+                table: "Notification",
+                column: "CreatedAt");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Notification_IsRead",
+                table: "Notification",
+                column: "IsRead");
+
+            migrationBuilder.CreateIndex(
                 name: "IX_Notification_RecipientId",
                 table: "Notification",
                 column: "RecipientId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_Notification_SenderId",
+                name: "IX_Notification_TypeId",
                 table: "Notification",
-                column: "SenderId");
+                column: "TypeId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_Project_StatusId",
@@ -452,6 +477,12 @@ namespace ProjectCenter.Infrastructure.Migrations
                 table: "Teacher",
                 column: "UserId",
                 unique: true);
+
+            migrationBuilder.CreateIndex(
+                name: "UX_TypeNotification_Name",
+                table: "TypeNotification",
+                column: "Name",
+                unique: true);
         }
 
         /// <inheritdoc />
@@ -480,6 +511,9 @@ namespace ProjectCenter.Infrastructure.Migrations
 
             migrationBuilder.DropTable(
                 name: "Project");
+
+            migrationBuilder.DropTable(
+                name: "TypeNotification");
 
             migrationBuilder.DropTable(
                 name: "StatusProject");

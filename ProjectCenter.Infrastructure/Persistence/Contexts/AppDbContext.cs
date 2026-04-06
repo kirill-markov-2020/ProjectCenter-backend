@@ -21,7 +21,8 @@ namespace ProjectCenter.Infrastructure.Persistence.Contexts
         public DbSet<DayOfWeekForConsultation> DayOfWeekForConsultations { get; set; }
         public DbSet<ConsultationSchedule> ConsultationSchedules { get; set; }
         public DbSet<Comment> Comments { get; set; }
-        public DbSet<Notification> Notifications { get; set; }
+        public DbSet<Notification> Notifications { get; set; }         
+        public DbSet<TypeNotification> TypeNotifications { get; set; }
         public DbSet<Grade> Grade { get; set; }
         public DbSet<Project> Projects { get; set; }
         public DbSet<Subject> Subjects { get; set; }

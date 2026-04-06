@@ -9,17 +9,48 @@ namespace ProjectCenter.Infrastructure.Persistence.Configurations
         public void Configure(EntityTypeBuilder<Notification> builder)
         {
             builder.ToTable("Notification");
-            builder.Property(n => n.Text).HasMaxLength(1000).IsRequired();
 
-            builder.HasOne(n => n.Sender)
-                   .WithMany(u => u.SentNotifications)
-                   .HasForeignKey(n => n.SenderId)
-                   .OnDelete(DeleteBehavior.Restrict);
+            builder.HasKey(n => n.Id);
 
+            builder.Property(n => n.Title)
+                .IsRequired()
+                .HasMaxLength(200);
+
+            builder.Property(n => n.Text)
+                .IsRequired()
+                .HasMaxLength(1000);
+
+            builder.Property(n => n.CreatedAt)
+                .IsRequired()
+                .HasDefaultValueSql("GETUTCDATE()");
+
+            builder.Property(n => n.IsRead)
+                .IsRequired()
+                .HasDefaultValue(false);
+
+ 
+            builder.HasIndex(n => n.RecipientId)
+                .HasDatabaseName("IX_Notification_RecipientId");
+
+            builder.HasIndex(n => n.TypeId)
+                .HasDatabaseName("IX_Notification_TypeId");
+
+            builder.HasIndex(n => n.IsRead)
+                .HasDatabaseName("IX_Notification_IsRead");
+
+            builder.HasIndex(n => n.CreatedAt)
+                .HasDatabaseName("IX_Notification_CreatedAt");
+
+       
             builder.HasOne(n => n.Recipient)
-                   .WithMany(u => u.ReceivedNotifications)
-                   .HasForeignKey(n => n.RecipientId)
-                   .OnDelete(DeleteBehavior.Restrict);
+                .WithMany(u => u.ReceivedNotifications)
+                .HasForeignKey(n => n.RecipientId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            builder.HasOne(n => n.Type)
+                .WithMany(t => t.Notifications)
+                .HasForeignKey(n => n.TypeId)
+                .OnDelete(DeleteBehavior.Restrict); 
         }
     }
 }
