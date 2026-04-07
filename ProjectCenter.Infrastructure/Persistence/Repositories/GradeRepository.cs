@@ -21,19 +21,19 @@ namespace ProjectCenter.Infrastructure.Persistence.Repositories
 
         public async Task<Grade?> GetByProjectIdAsync(int projectId)
         {
-            return await _context.Grade
+            return await _context.Grades
                 .FirstOrDefaultAsync(g => g.ProjectId == projectId);
         }
 
         public async Task AddAsync(Grade grade)
         {
-            _context.Grade.Add(grade);
+            _context.Grades.Add(grade);
             await _context.SaveChangesAsync();
         }
 
         public async Task UpdateAsync(Grade grade)
         {
-            _context.Grade.Update(grade);
+            _context.Grades.Update(grade);
             await _context.SaveChangesAsync();
         }
     }
