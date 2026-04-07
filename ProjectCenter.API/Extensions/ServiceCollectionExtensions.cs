@@ -6,6 +6,7 @@ using Microsoft.IdentityModel.Tokens;
 using ProjectCenter.Application.Interfaces;
 using ProjectCenter.Application.Mappings;
 using ProjectCenter.Application.Services;
+using ProjectCenter.Application.Services.ProjectCenter.Application.Services;
 using ProjectCenter.Core.Exceptions;
 using ProjectCenter.Infrastructure.Persistence.Contexts;
 using ProjectCenter.Infrastructure.Persistence.Repositories;
@@ -70,6 +71,9 @@ namespace ProjectCenter.API.Extensions
             services.AddScoped<IDirectoryRepository, DirectoryRepository>();
             services.AddScoped<ITeacherRepository, TeacherRepository>();
             services.AddScoped<IGradeRepository, GradeRepository>();
+            services.AddScoped<INotificationRepository, NotificationRepository>();
+
+            
 
             return services;
         }
@@ -84,6 +88,7 @@ namespace ProjectCenter.API.Extensions
             services.AddScoped<IGradeService, GradeService>();
             services.AddScoped<IJwtService, JwtService>();
             services.AddScoped<IFileService, FileService>();
+            services.AddScoped<INotificationService, NotificationService>();
 
             return services;
         }
