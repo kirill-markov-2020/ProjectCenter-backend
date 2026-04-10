@@ -3,7 +3,7 @@
 
 public interface IProjectService
 {
-    Task<List<ProjectDto>> GetProjectsForUserAsync(int userId, bool isAdmin, string role);
+    Task<List<ProjectDto>> GetProjectsForUserAsync(int userId);
     Task<ProjectDto> GetProjectByIdAsync(int id);
 
     

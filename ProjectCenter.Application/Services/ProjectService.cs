@@ -23,31 +23,27 @@ namespace ProjectCenter.Application.Services
             _fileService = fileService;
         }
 
-        
-        public async Task<List<ProjectDto>> GetProjectsForUserAsync(int userId, bool isAdmin, string role)
+
+        // ProjectCenter.Application/Services/ProjectService.cs
+        public async Task<List<ProjectDto>> GetProjectsForUserAsync(int userId)
         {
-            if (isAdmin)
+            var user = await _userRepository.GetFullUserByIdAsync(userId);
+
+            // Админ — все проекты
+            if (user.IsAdmin)
             {
                 var allProjects = await _projectRepository.GetAllProjectsAsync();
                 return _mapper.Map<List<ProjectDto>>(allProjects);
             }
 
-          
-            if (role == "Teacher")
+            // Учитель — все проекты (тоже)
+            if (user.Teacher != null)
             {
-                var user = await _userRepository.GetFullUserByIdAsync(userId);
-                if (user?.Teacher == null)
-                    throw new AccessDeniedException("Вы не являетесь преподавателем");
-
-                var teacherProjects = await _projectRepository.GetProjectsByTeacherIdAsync(user.Teacher.Id);
-                if (teacherProjects == null || !teacherProjects.Any())
-                {
-                    throw new NoProjectsForTeacherException(user.Teacher.Id);
-                }
-                return _mapper.Map<List<ProjectDto>>(teacherProjects);
+                var allProjects = await _projectRepository.GetAllProjectsAsync();
+                return _mapper.Map<List<ProjectDto>>(allProjects);
             }
 
-           
+            // Студент — только публичные
             var publicProjects = await _projectRepository.GetPublicProjectsAsync();
             return _mapper.Map<List<ProjectDto>>(publicProjects);
         }
