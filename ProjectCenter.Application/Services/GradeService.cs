@@ -55,7 +55,7 @@ namespace ProjectCenter.Application.Services
          
                 existingGrade.Value = dto.Value;
                 existingGrade.Comment = dto.Comment;
-                existingGrade.CreatedAt = DateTime.UtcNow; 
+                existingGrade.CreatedAt = DateTime.Now; 
                 await _gradeRepository.UpdateAsync(existingGrade);
 
                 return new GradeDto
@@ -73,7 +73,7 @@ namespace ProjectCenter.Application.Services
                 TeacherId = teacher.Teacher.Id,
                 Value = dto.Value,
                 Comment = dto.Comment,
-                CreatedAt = DateTime.UtcNow
+                CreatedAt = DateTime.Now
             };
 
             await _gradeRepository.AddAsync(grade);
@@ -111,7 +111,7 @@ namespace ProjectCenter.Application.Services
     
             existingGrade.Value = dto.Value;
             existingGrade.Comment = dto.Comment;
-            existingGrade.CreatedAt = DateTime.UtcNow;
+            existingGrade.CreatedAt = DateTime.Now;
             await _gradeRepository.UpdateAsync(existingGrade);
 
             return new GradeDto

@@ -82,7 +82,7 @@ namespace ProjectCenter.Application.Services
                 FileProject = null,
                 FileDocumentation = null,
                 DateDeadline = new DateTime(DateTime.Now.Year + 1, 6, 30),
-                CreatedDate = DateTime.UtcNow
+                CreatedDate = DateTime.Now
             };
 
             await _projectRepository.AddProjectAsync(project);
@@ -251,7 +251,7 @@ namespace ProjectCenter.Application.Services
             var comment = new Comment
             {
                 Text = text,
-                Date = DateTime.UtcNow,
+                Date = DateTime.Now,
                 UserId = user.Id,
                 ProjectId = project.Id
             };

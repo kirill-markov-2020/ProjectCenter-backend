@@ -9,7 +9,7 @@ public class Notification
     public int RecipientId { get; set; }     
     public string Title { get; set; }              
     public string Text { get; set; }            
-    public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
+    public DateTime CreatedAt { get; set; } = DateTime.Now;
     public bool IsRead { get; set; } = false;   
     public int TypeId { get; set; }               
 
