@@ -27,6 +27,10 @@ namespace ProjectCenter.Application.Interfaces
         Task SendStudentCuratorChangedForOldCuratorNotificationAsync(int oldCuratorUserId, string studentFullName);
         Task SendStudentCuratorChangedForNewCuratorNotificationAsync(int newCuratorUserId, string studentFullName);
         Task SendStudentCuratorChangedForStudentNotificationAsync(int studentUserId, string oldCuratorFullName, string newCuratorFullName);
+        Task SendUserWelcomeNotificationAsync(int userId, string userFullName, string role);
+        Task SendNewTeacherNotificationForAdminsAsync(List<int> adminUserIds, string teacherFullName, string teacherEmail);
+        Task SendNewStudentNotificationForAdminsAsync(List<int> adminUserIds, string studentFullName, string studentEmail);
 
+        Task SendStudentDeletedNotificationForCuratorAsync(int curatorUserId, string studentFullName, string groupName);
     }
 }

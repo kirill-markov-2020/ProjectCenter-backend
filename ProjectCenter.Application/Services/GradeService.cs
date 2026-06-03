@@ -113,10 +113,14 @@ namespace ProjectCenter.Application.Services
             if (project == null)
                 throw new ProjectNotFoundException(projectId);
 
-            if (project.TeacherId != teacher.Teacher.Id)
+            var student = await _userRepository.GetStudentByUserIdAsync(project.Student.UserId);
+            if (student == null)
+                throw new StudentNotFoundException(project.Student.UserId);
+
+            if (student.TeacherId != teacher.Teacher.Id)
                 throw new ProjectAccessDeniedException();
 
-       
+
             if (dto.Value < 1 || dto.Value > 5)
                 throw new ArgumentException("Оценка должна быть от 1 до 5");
 
@@ -128,14 +132,17 @@ namespace ProjectCenter.Application.Services
             existingGrade.Value = dto.Value;
             existingGrade.Comment = dto.Comment;
             existingGrade.CreatedAt = DateTime.Now;
+            existingGrade.TeacherId = teacher.Teacher.Id;
+
             await _gradeRepository.UpdateAsync(existingGrade);
             var teacherFullName = $"{teacher.Surname} {teacher.Name} {teacher.Patronymic}".Trim();
-            var student = await _userRepository.GetByIdAsync(project.Student.UserId);
-            if (student != null)
+            var studentUser = await _userRepository.GetByIdAsync(project.Student.UserId);
+
+            if (studentUser != null)
             {
                 await _notificationService.SendUpdateGradeNotificationAsyns
                     (
-                        student.Id,
+                        studentUser.Id,
                         teacherFullName,
                         project.Title,
                         oldValue,

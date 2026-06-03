@@ -22,14 +22,16 @@ namespace ProjectCenter.Application.Services
         private readonly IFileService _fileService;
         private readonly INotificationService _notificationService;
         private readonly IProjectRepository _projectRepository;
+        private readonly IProjectService _projectService;
 
-        public UserService(IUserRepository userRepository, IMapper mapper, IFileService fileService, INotificationService notificationService, IProjectRepository projectRepository)
+        public UserService(IUserRepository userRepository, IMapper mapper, IFileService fileService, INotificationService notificationService, IProjectRepository projectRepository, IProjectService projectService)
         {
             _userRepository = userRepository;
             _mapper = mapper;
             _fileService = fileService;
             _notificationService = notificationService;
             _projectRepository = projectRepository;
+            _projectService = projectService;
         }
 
 
@@ -92,13 +94,22 @@ namespace ProjectCenter.Application.Services
 
             await _userRepository.AddUserAsync(user);
 
+            bool isTeacher = false;
+            string teacherFullName = null;
+            string teacherEmail = null;
+            bool isStudent = false;
+            string studentFullName = null;
+            string studentEmail = null;
+
             if (roleNormalized.Equals("Teacher", StringComparison.OrdinalIgnoreCase))
             {
                 var teacher = new Teacher
                 {
                     UserId = user.Id
                 };
-
+                isTeacher = true;
+                teacherFullName = $"{user.Surname} {user.Name} {user.Patronymic}".Trim();
+                teacherEmail = user.Email;
                 await _userRepository.AddTeacherAsync(teacher);
             }
             else if (roleNormalized.Equals("Student", StringComparison.OrdinalIgnoreCase))
@@ -109,10 +120,51 @@ namespace ProjectCenter.Application.Services
                     GroupId = dto.GroupId!.Value,
                     TeacherId = dto.TeacherId!.Value
                 };
-
+                isStudent = true;
+                studentFullName = $"{user.Surname} {user.Name} {user.Patronymic}".Trim();
+                studentEmail = user.Email;
                 await _userRepository.AddStudentAsync(student);
             }
+            var userFullName = $"{user.Surname} {user.Name} {user.Patronymic}".Trim();
+            await _notificationService.SendUserWelcomeNotificationAsync(
+                user.Id,
+                userFullName,
+                roleNormalized
+            );
+            if (isTeacher)
+            {
+                var allUsers = await _userRepository.GetAllAsync();
+                var adminUserIds = allUsers
+                    .Where(u => u.IsAdmin)
+                    .Select(u => u.Id)
+                    .ToList();
 
+                if (adminUserIds.Any())
+                {
+                    await _notificationService.SendNewTeacherNotificationForAdminsAsync(
+                        adminUserIds,
+                        teacherFullName,
+                        teacherEmail
+                    );
+                }
+            }
+            if (isStudent)
+            {
+                var allUsers = await _userRepository.GetAllAsync();
+                var adminUserIds = allUsers
+                    .Where(u => u.IsAdmin)
+                    .Select(u => u.Id)
+                    .ToList();
+
+                if (adminUserIds.Any())
+                {
+                    await _notificationService.SendNewStudentNotificationForAdminsAsync(
+                        adminUserIds,
+                        studentFullName,
+                        studentEmail
+                    );
+                }
+            }
             return new CreateUserResponseDto
             {
                 UserId = user.Id,
@@ -131,7 +183,10 @@ namespace ProjectCenter.Application.Services
             if (user == null)
                 throw new ArgumentException("Пользователь не найден.");
 
-          
+            int? curatorUserId = null;
+            string? studentFullName = null;
+            string? groupName = null;
+
             if (user.Teacher != null)
             {
                 var students = await _userRepository.GetAllAsync();
@@ -144,10 +199,39 @@ namespace ProjectCenter.Application.Services
             }
             else if (user.Student != null)
             {
+                studentFullName = $"{user.Surname} {user.Name} {user.Patronymic}".Trim();
+                groupName = user.Student.Group?.Name ?? "не указана";
+
+                var curator = await _userRepository.GetTeacherByIdAsync(user.Student.TeacherId);
+                if (curator != null)
+                {
+                    curatorUserId = curator.UserId;
+                }
+
+                var projects = await _projectRepository.GetProjectsByStudentIdAsync(user.Student.Id);
+                foreach (var project in projects)
+                {
+                    if (!string.IsNullOrEmpty(project.FileProject))
+                        _fileService.DeleteProjectFile(project.FileProject);
+
+                    if (!string.IsNullOrEmpty(project.FileDocumentation))
+                        _fileService.DeleteDocumentationFile(project.FileDocumentation);
+                    await _projectRepository.DeleteProjectAsync(project);
+                }
+
                 await _userRepository.DeleteStudentAsync(user.Student);
             }
 
             await _userRepository.DeleteUserAsync(user);
+
+            if (curatorUserId.HasValue && curatorUserId.Value > 0 && studentFullName != null)
+            {
+                await _notificationService.SendStudentDeletedNotificationForCuratorAsync(
+                    curatorUserId.Value,
+                    studentFullName,
+                    groupName
+                );
+            }
         }
         public async Task<UserDto> GetMyProfileAsync(int userId)
         {

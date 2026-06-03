@@ -379,7 +379,84 @@ namespace ProjectCenter.Application.Services
 
             await _notificationRepository.AddAsync(notification);
         }
+        public async Task SendUserWelcomeNotificationAsync(int userId, string userFullName, string role)
+        {
+            var roleDisplay = role switch
+            {
+                "Admin" => "администратор",
+                "Teacher" => "преподаватель",
+                "Student" => "студент",
+                _ => role
+            };
 
+            var text = $"Добро пожаловать, {userFullName}, в ProjectCenter! Ваша роль: {roleDisplay}.";
+
+            var notification = new Notification
+            {
+                RecipientId = userId,
+                Title = "Добро пожаловать!",
+                Text = text,
+                CreatedAt = DateTime.Now,
+                IsRead = false,
+                TypeId = 18
+            };
+
+            await _notificationRepository.AddAsync(notification);
+        }
+        public async Task SendNewTeacherNotificationForAdminsAsync(List<int> adminUserIds, string teacherFullName, string teacherEmail)
+        {
+            var text = $"В системе зарегистрирован новый преподаватель: {teacherFullName}, рабочая почта: {teacherEmail}.";
+
+            foreach (var adminId in adminUserIds)
+            {
+                var notification = new Notification
+                {
+                    RecipientId = adminId,
+                    Title = "Новый преподаватель",
+                    Text = text,
+                    CreatedAt = DateTime.Now,
+                    IsRead = false,
+                    TypeId = 19
+                };
+
+                await _notificationRepository.AddAsync(notification);
+            }
+        }
+        public async Task SendNewStudentNotificationForAdminsAsync(List<int> adminUserIds, string studentFullName, string studentEmail)
+        {
+            var text = $"В системе зарегистрирован новый студент: {studentFullName}, почта: {studentEmail}.";
+
+            foreach (var adminId in adminUserIds)
+            {
+                var notification = new Notification
+                {
+                    RecipientId = adminId,
+                    Title = "Новый студент",
+                    Text = text,
+                    CreatedAt = DateTime.Now,
+                    IsRead = false,
+                    TypeId = 15
+                };
+
+                await _notificationRepository.AddAsync(notification);
+            }
+        }
+        public async Task SendStudentDeletedNotificationForCuratorAsync(int curatorUserId, string studentFullName, string groupName)
+        {
+            var text = $"Студент {studentFullName} (группа {groupName}) был удалён из системы.";
+
+            var notification = new Notification
+            {
+                RecipientId = curatorUserId,
+                Title = "Студент удалён",
+                Text = text,
+                CreatedAt = DateTime.Now,
+                IsRead = false,
+                TypeId = 21
+            };
+
+            await _notificationRepository.AddAsync(notification);
+        }
 
     }
 }
