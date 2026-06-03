@@ -14,13 +14,17 @@ namespace ProjectCenter.Application.Services
         private readonly IUserRepository _userRepository; 
         private readonly IMapper _mapper;
         private readonly IFileService _fileService;
+        private readonly INotificationService _notificationService;
+        private readonly IDirectoryRepository _directoryRepository;
 
-        public ProjectService(IProjectRepository projectRepository, IUserRepository userRepository, IMapper mapper, IFileService fileService)
+        public ProjectService(IProjectRepository projectRepository, IUserRepository userRepository, IMapper mapper, IFileService fileService, INotificationService notificationService, IDirectoryRepository directoryRepository)
         {
             _projectRepository = projectRepository;
             _userRepository = userRepository;
             _mapper = mapper;
             _fileService = fileService;
+            _notificationService = notificationService;
+            _directoryRepository = directoryRepository;
         }
 
 
@@ -86,7 +90,21 @@ namespace ProjectCenter.Application.Services
             };
 
             await _projectRepository.AddProjectAsync(project);
-
+            var studentUser = await _userRepository.GetByIdAsync(studentUserId);
+            var studentFullName = $"{studentUser.Surname} {studentUser.Name} {studentUser.Patronymic}".Trim();
+            var curatorUserId = student.Teacher.UserId;
+            var allUsers = await _userRepository.GetAllAsync();
+            var adminUserIds = allUsers
+                .Where(u => u.IsAdmin)
+                .Select(u => u.Id)
+                .ToList();
+            await _notificationService.SendAddNewProjectNotificationAsync
+                (
+                    curatorUserId,
+                    studentFullName,
+                    project.Title,
+                    adminUserIds
+                );
             var createdProject = await _projectRepository.GetProjectByIdAsync(project.Id);
             return _mapper.Map<ProjectDto>(createdProject);
         }
@@ -142,7 +160,12 @@ namespace ProjectCenter.Application.Services
             if (student == null || project.StudentId != student.Id)
                 throw new ProjectAccessDeniedException();
 
-         
+            bool fileUploaded = false;
+            bool documentationUploaded = false;
+            bool visibilityChanged = false;
+            bool? oldVisibility = null;
+
+
             if (dto.NewProjectFile != null)
             {
   
@@ -150,6 +173,7 @@ namespace ProjectCenter.Application.Services
                     _fileService.DeleteProjectFile(project.FileProject);
 
                 project.FileProject = await _fileService.SaveProjectFileAsync(dto.NewProjectFile);
+                fileUploaded = true;
             }
             else if (dto.RemoveProjectFile == true && !string.IsNullOrEmpty(project.FileProject))
             {
@@ -165,6 +189,7 @@ namespace ProjectCenter.Application.Services
                     _fileService.DeleteDocumentationFile(project.FileDocumentation);
 
                 project.FileDocumentation = await _fileService.SaveDocumentationFileAsync(dto.NewDocumentationFile);
+                documentationUploaded = true;
             }
             else if (dto.RemoveDocumentationFile == true && !string.IsNullOrEmpty(project.FileDocumentation))
             {
@@ -174,11 +199,83 @@ namespace ProjectCenter.Application.Services
 
 
             if (dto.IsPublic.HasValue)
+            {
+                oldVisibility = project.IsPublic;
                 project.IsPublic = dto.IsPublic.Value;
+                if (oldVisibility != dto.IsPublic.Value)
+                    visibilityChanged = true;
+                
+            }
+                
 
             await _projectRepository.UpdateProjectAsync(project);
 
+            if (fileUploaded && !documentationUploaded)
+            {
+                var studentUser = await _userRepository.GetByIdAsync(studentUserId);
+                var studentFullName = $"{studentUser.Surname} {studentUser.Name} {studentUser.Patronymic}".Trim();
+                var curatorUserId = project.Teacher?.User?.Id ?? 0;
 
+                if (curatorUserId > 0)
+                {
+                    await _notificationService.SendProjectFileUpdatedNotificationAsync(
+                        curatorUserId,
+                        studentFullName,
+                        project.Title
+                    );
+                }
+            }
+            else if (documentationUploaded && !fileUploaded)
+            {
+                var studentUser = await _userRepository.GetByIdAsync(studentUserId);
+                var studentFullName = $"{studentUser.Surname} {studentUser.Name} {studentUser.Patronymic}".Trim();
+                var curatorUserId = project.Teacher?.User?.Id ?? 0;
+
+                if (curatorUserId > 0)
+                {
+                    await _notificationService.SendProjectDocumentationUpdatedNotificationAsync(
+                        curatorUserId,
+                        studentFullName,
+                        project.Title
+                    );
+                }
+            }
+            else if(documentationUploaded && fileUploaded)
+            {
+                var studentUser = await _userRepository.GetByIdAsync(studentUserId);
+                var studentFullName = $"{studentUser.Surname} {studentUser.Name} {studentUser.Patronymic}".Trim();
+                var curatorUserId = project.Teacher?.User?.Id ?? 0;
+
+                if (curatorUserId > 0)
+                {
+                    await _notificationService.SendProjectDocumentationAndFileUpdatedNotificationAsync(
+                        curatorUserId,
+                        studentFullName,
+                        project.Title
+                    );
+                }
+            }
+            if (visibilityChanged)
+            {
+                var studentUser = await _userRepository.GetByIdAsync(studentUserId);
+                var studentFullName = $"{studentUser.Surname} {studentUser.Name} {studentUser.Patronymic}".Trim();
+                var curatorUserId = project.Teacher?.User?.Id ?? 0;
+                var allUsers = await _userRepository.GetAllAsync();
+                var adminUserIds = allUsers
+                    .Where(u => u.IsAdmin)
+                    .Select(u => u.Id)
+                    .ToList();
+                if (curatorUserId > 0)
+                {
+                    await _notificationService.SendProjectVisibilityChangedNotificationAsync(
+                        curatorUserId,
+                        studentFullName,
+                        project.Title,
+                        project.IsPublic,
+                        adminUserIds
+                    );
+                }
+            }
             var updatedProject = await _projectRepository.GetProjectByIdAsync(projectId);
             return _mapper.Map<ProjectDto>(updatedProject);
         }
@@ -187,8 +284,12 @@ namespace ProjectCenter.Application.Services
             var project = await _projectRepository.GetProjectByIdAsync(projectId);
             if (project == null)
                 throw new ArgumentException("Проект не найден");
+            var projectTitle = project.Title;
+            var curatorUserId = project.Teacher?.User?.Id ?? 0;
+            var studentUserId = project.Student?.User?.Id ?? 0;
+            var studentFullName = $"{project.Student?.User?.Surname} {project.Student?.User?.Name} {project.Student?.User?.Patronymic}".Trim();
 
-        
+
             if (!string.IsNullOrEmpty(project.FileProject))
                 _fileService.DeleteProjectFile(project.FileProject);
 
@@ -202,6 +303,24 @@ namespace ProjectCenter.Application.Services
 
     
             await _projectRepository.DeleteProjectAsync(project);
+            if (curatorUserId > 0)
+            {
+                await _notificationService.SendDeleteProjectForCuratorNotificationAsync(
+                    curatorUserId,
+                    
+                    studentFullName,
+                    projectTitle
+                );
+            }
+            if (studentUserId > 0)
+            {
+                await _notificationService.SendDeleteProjectForStudentNotificationAsync(
+                    studentUserId,
+                    projectTitle
+                );
+            }
+
+
         }
         public async Task<ProjectDto?> GetMyProjectAsync(int studentUserId)
         {
@@ -261,6 +380,17 @@ namespace ProjectCenter.Application.Services
 
 
             await _projectRepository.UpdateProjectAsync(project);
+            var student = await _userRepository.GetByIdAsync(project.Student.UserId);
+            if (student != null)
+            {
+                var curatorFullName = $"{user.Surname} {user.Name} {user.Patronymic}".Trim();
+                await _notificationService.SendCommentNotificationAsync(
+                    student.Id,
+                    curatorFullName,
+                    project.Title,
+                    text
+                );
+            }
         }
        
         public async Task<ProjectDto> GetTeacherStudentProjectAsync(int projectId, int teacherUserId)
@@ -290,15 +420,124 @@ namespace ProjectCenter.Application.Services
                 throw new ProjectNotFoundException(projectId);
             if (project.TeacherId != teacher.Teacher.Id)
                 throw new AccessDeniedException("Вы можете редактировать только проекты своих студентов.");
+            bool titleChanged = false;
+            bool typeChanged = false;
+            bool deadlineChanged = false;
+            bool subjectChanged = false;
+            string? oldTitle = null;
+            string? newTitle = null;
+            string? oldTypeName = null;
+            string? newTypeName = null;
+            string? oldSubjectName = null;
+            string? newSubjectName = null;
+            DateTime? oldDeadline = null;
+            DateTime? newDeadline = null;
             if (!string.IsNullOrWhiteSpace(dto.Title))
-                project.Title = dto.Title;
+            {
+                oldTitle = project.Title;
+                newTitle = dto.Title;
+
+                if (oldTitle != newTitle)
+                {
+                    project.Title = newTitle;
+                    titleChanged = true;
+                }
+            }
             if (dto.TypeId.HasValue)
-                project.TypeId = dto.TypeId.Value;
+            {
+                var oldTypeId = project.TypeId;
+
+                if (oldTypeId != dto.TypeId.Value)
+                {
+                    var oldType = await _directoryRepository.GetTypeByIdAsync(oldTypeId);
+                    oldTypeName = oldType?.Name ?? "неизвестный тип";
+                    project.TypeId = dto.TypeId.Value;
+                    typeChanged = true;
+                    var newType = await _directoryRepository.GetTypeByIdAsync(project.TypeId);
+                    newTypeName = newType?.Name ?? "неизвестный тип";
+                }
+            }
+
             if (dto.SubjectId.HasValue)
-                project.SubjectId = dto.SubjectId.Value;
+            {
+                var oldSubjectId = project.SubjectId;
+                if (oldSubjectId != dto.SubjectId.Value)
+                {
+                    var oldSubject = await _directoryRepository.GetSubjectByIdAsync(oldSubjectId);
+                    oldSubjectName = oldSubject?.Name ?? "неизвестный предмет";
+                    project.SubjectId = dto.SubjectId.Value;
+                    subjectChanged = true;
+                    var newSubject = await _directoryRepository.GetSubjectByIdAsync(project.SubjectId);
+                    newSubjectName = newSubject?.Name ?? "неизвестный предмет";
+                }
+            }
             if (dto.DateDeadline.HasValue)
-                project.DateDeadline = dto.DateDeadline.Value;
+            {
+                oldDeadline = project.DateDeadline;
+                newDeadline = dto.DateDeadline.Value;
+
+                if (oldDeadline.Value.Date != newDeadline.Value.Date)
+                {
+                    project.DateDeadline = newDeadline.Value;
+                    deadlineChanged = true;
+                }
+            }
             await _projectRepository.UpdateProjectAsync(project);
+            var studentUserId = project.Student?.User?.Id ?? 0;
+            var curatorFullName = $"{teacher.Surname} {teacher.Name} {teacher.Patronymic}".Trim();
+
+            if (titleChanged)
+            {
+                
+                if (studentUserId > 0)
+                {
+                    await _notificationService.SendProjectTitleChangedNotificationAsync(
+                        studentUserId,
+                        curatorFullName,
+                        newTitle!,
+                        oldTitle!
+                    );
+                }
+            }
+            if (typeChanged)
+            {
+                
+                
+                if (studentUserId > 0)
+                {
+                    await _notificationService.SendProjectTypeChangedNotificationAsync(
+                        studentUserId,
+                        curatorFullName,
+                        newTypeName!,
+                        oldTypeName!,
+                        project.Title
+                    );
+                }
+            }
+            if (subjectChanged)
+            {
+                
+
+                if (studentUserId > 0)
+                {
+                    await _notificationService.SendProjectSubjectChangedNotificationAsync(
+                        studentUserId,
+                        curatorFullName,
+                        newSubjectName!,
+                        oldSubjectName!,
+                        project.Title
+                    );
+                }
+            }
+            if (deadlineChanged && studentUserId > 0 && newDeadline.HasValue)
+            {
+                await _notificationService.SendProjectDeadlineChangedNotificationAsync(
+                    studentUserId,
+                    curatorFullName,
+                    project.Title,
+                    newDeadline.Value
+                );
+            }
             var updatedProject = await _projectRepository.GetProjectByIdAsync(projectId);
             return _mapper.Map<ProjectDto>(updatedProject);
         }

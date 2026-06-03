@@ -15,15 +15,18 @@ namespace ProjectCenter.Application.Services
         private readonly IGradeRepository _gradeRepository;
         private readonly IProjectRepository _projectRepository;
         private readonly IUserRepository _userRepository;
+        private readonly INotificationService _notificationService;
 
         public GradeService(
             IGradeRepository gradeRepository,
             IProjectRepository projectRepository,
-            IUserRepository userRepository)
+            IUserRepository userRepository,
+            INotificationService notificationService)
         {
             _gradeRepository = gradeRepository;
             _projectRepository = projectRepository;
             _userRepository = userRepository;
+            _notificationService = notificationService;
         }
 
    
@@ -77,13 +80,26 @@ namespace ProjectCenter.Application.Services
             };
 
             await _gradeRepository.AddAsync(grade);
-
+            var teacherFullName = $"{teacher.Surname} {teacher.Name} {teacher.Patronymic}".Trim();
+            var student = await _userRepository.GetByIdAsync(project.Student.UserId);
+            if (student != null)
+            {
+                await _notificationService.SendAddGradeNotificationAsyns
+                    (
+                        student.Id,
+                        teacherFullName,
+                        project.Title,
+                        dto.Value,
+                        dto.Comment
+                    );
+            }
             return new GradeDto
             {
                 Value = grade.Value,
                 Comment = grade.Comment,
                 CreatedAt = grade.CreatedAt
             };
+            
         }
         public async Task<GradeDto> UpdateGradeAsync(int teacherUserId, int projectId, GradeRequestDto dto)
         {
@@ -108,12 +124,25 @@ namespace ProjectCenter.Application.Services
             if (existingGrade == null)
                 throw new Exception("Оценка ещё не выставлена. Сначала создайте оценку.");
 
-    
+            int oldValue = existingGrade.Value;
             existingGrade.Value = dto.Value;
             existingGrade.Comment = dto.Comment;
             existingGrade.CreatedAt = DateTime.Now;
             await _gradeRepository.UpdateAsync(existingGrade);
-
+            var teacherFullName = $"{teacher.Surname} {teacher.Name} {teacher.Patronymic}".Trim();
+            var student = await _userRepository.GetByIdAsync(project.Student.UserId);
+            if (student != null)
+            {
+                await _notificationService.SendUpdateGradeNotificationAsyns
+                    (
+                        student.Id,
+                        teacherFullName,
+                        project.Title,
+                        oldValue,
+                        dto.Value,
+                        dto.Comment
+                    );
+            }
             return new GradeDto
             {
                 Value = existingGrade.Value,

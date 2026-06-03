@@ -6,7 +6,6 @@ using Microsoft.IdentityModel.Tokens;
 using ProjectCenter.Application.Interfaces;
 using ProjectCenter.Application.Mappings;
 using ProjectCenter.Application.Services;
-using ProjectCenter.Application.Services.ProjectCenter.Application.Services;
 using ProjectCenter.Core.Exceptions;
 using ProjectCenter.Infrastructure.Persistence.Contexts;
 using ProjectCenter.Infrastructure.Persistence.Repositories;

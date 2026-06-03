@@ -10,8 +10,7 @@ namespace ProjectCenter.Infrastructure.Persistence.Configurations
     using Microsoft.EntityFrameworkCore;
     using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
-    namespace ProjectCenter.Infrastructure.Persistence.Configurations
-    {
+    
         public class GradeConfiguration : IEntityTypeConfiguration<Grade>
         {
             public void Configure(EntityTypeBuilder<Grade> builder)
@@ -42,5 +41,5 @@ namespace ProjectCenter.Infrastructure.Persistence.Configurations
                     .OnDelete(DeleteBehavior.Restrict);
             }
         }
-    }
+    
 }

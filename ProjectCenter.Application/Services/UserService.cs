@@ -20,12 +20,16 @@ namespace ProjectCenter.Application.Services
 
         private readonly IMapper _mapper;
         private readonly IFileService _fileService;
+        private readonly INotificationService _notificationService;
+        private readonly IProjectRepository _projectRepository;
 
-        public UserService(IUserRepository userRepository, IMapper mapper, IFileService fileService)
+        public UserService(IUserRepository userRepository, IMapper mapper, IFileService fileService, INotificationService notificationService, IProjectRepository projectRepository)
         {
             _userRepository = userRepository;
             _mapper = mapper;
             _fileService = fileService;
+            _notificationService = notificationService;
+            _projectRepository = projectRepository;
         }
 
 
@@ -208,6 +212,39 @@ namespace ProjectCenter.Application.Services
             if (user == null)
                 throw new ArgumentException("Пользователь не найден.");
 
+            int? oldCuratorUserId = null;
+            int? newCuratorUserId = null;
+            string oldCuratorFullName = null;
+            string newCuratorFullName = null;
+            string studentFullName = null;
+            bool curatorWillChange = false;
+            int oldTeacherId = 0;
+            int newTeacherId = 0;
+
+            if (user.Student != null && dto.CuratorId.HasValue && user.Student.TeacherId != dto.CuratorId.Value)
+            {
+                curatorWillChange = true;
+
+                oldTeacherId = user.Student.TeacherId;
+                newTeacherId = dto.CuratorId.Value;
+
+                var oldTeacher = await _userRepository.GetTeacherByIdAsync(oldTeacherId);
+                if (oldTeacher != null)
+                {
+                    oldCuratorUserId = oldTeacher.UserId;
+                    oldCuratorFullName = $"{oldTeacher.User.Surname} {oldTeacher.User.Name} {oldTeacher.User.Patronymic}".Trim();
+                }
+
+                var newTeacher = await _userRepository.GetTeacherByIdAsync(newTeacherId);
+                if (newTeacher != null)
+                {
+                    newCuratorUserId = newTeacher.UserId;
+                    newCuratorFullName = $"{newTeacher.User.Surname} {newTeacher.User.Name} {newTeacher.User.Patronymic}".Trim();
+                }
+
+                studentFullName = $"{user.Surname} {user.Name} {user.Patronymic}".Trim();
+            }
+
             if (!string.IsNullOrWhiteSpace(dto.Email) && user.Email != dto.Email)
             {
                 var emailErrors = EmailValidator.Validate(dto.Email);
@@ -230,16 +267,19 @@ namespace ProjectCenter.Application.Services
 
             if (!string.IsNullOrWhiteSpace(dto.Surname))
                 user.Surname = dto.Surname;
+
             if (!string.IsNullOrWhiteSpace(dto.Name))
                 user.Name = dto.Name;
+
             if (!string.IsNullOrWhiteSpace(dto.Patronymic))
                 user.Patronymic = dto.Patronymic;
+
             if (!string.IsNullOrWhiteSpace(dto.Login))
                 user.Login = dto.Login;
+
             if (!string.IsNullOrWhiteSpace(dto.PhotoPath))
                 user.Photo = dto.PhotoPath;
 
-           
             if (user.Student != null)
             {
                 if (dto.GroupId.HasValue)
@@ -248,12 +288,45 @@ namespace ProjectCenter.Application.Services
                 if (dto.CuratorId.HasValue)
                     user.Student.TeacherId = dto.CuratorId.Value;
 
-            
                 if (user.Student.GroupId == 0 || user.Student.TeacherId == 0)
                     throw new InvalidStudentDataException("Для студента должны быть указаны GroupId и TeacherId.");
             }
 
             await _userRepository.UpdateUserAsync(user);
+
+            if (curatorWillChange && newTeacherId > 0)
+            {
+                var studentProjects = await _projectRepository.GetProjectsByStudentIdAsync(user.Student.Id);
+
+                foreach (var project in studentProjects)
+                {
+                    project.TeacherId = newTeacherId;
+                    await _projectRepository.UpdateProjectAsync(project);
+                }
+            }
+            if (oldCuratorUserId.HasValue && oldCuratorUserId.Value > 0 && studentFullName != null)
+            {
+                await _notificationService.SendStudentCuratorChangedForOldCuratorNotificationAsync(
+                    oldCuratorUserId.Value,
+                    studentFullName
+                );
+            }
+            if (newCuratorUserId.HasValue && newCuratorUserId.Value > 0 && studentFullName != null)
+            {
+                await _notificationService.SendStudentCuratorChangedForNewCuratorNotificationAsync(
+                    newCuratorUserId.Value,
+                    studentFullName
+                );
+            }
+            if (curatorWillChange && oldCuratorFullName != null && newCuratorFullName != null)
+            {
+                await _notificationService.SendStudentCuratorChangedForStudentNotificationAsync(
+                    user.Id,  
+                    oldCuratorFullName,
+                    newCuratorFullName
+                );
+            }
+
         }
 
 

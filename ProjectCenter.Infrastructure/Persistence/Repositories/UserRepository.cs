@@ -101,7 +101,12 @@ namespace ProjectCenter.Infrastructure.Persistence.Repositories
                 .FirstOrDefaultAsync(s => s.UserId == userId);
         }
 
-
+        public async Task<Teacher?> GetTeacherByIdAsync(int teacherId)
+        {
+            return await _context.Teachers
+                .Include(t => t.User)
+                .FirstOrDefaultAsync(t => t.Id == teacherId);
+        }
 
 
 

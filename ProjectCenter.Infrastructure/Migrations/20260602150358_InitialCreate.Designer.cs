@@ -12,7 +12,7 @@ using ProjectCenter.Infrastructure.Persistence.Contexts;
 namespace ProjectCenter.Infrastructure.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20260406180850_InitialCreate")]
+    [Migration("20260602150358_InitialCreate")]
     partial class InitialCreate
     {
         /// <inheritdoc />

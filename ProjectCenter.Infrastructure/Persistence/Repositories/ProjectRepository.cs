@@ -130,6 +130,12 @@ namespace ProjectCenter.Infrastructure.Persistence.Repositories
                         .ThenInclude(t => t.User)
                 .FirstOrDefaultAsync();
         }
+        public async Task<List<Project>> GetProjectsByStudentIdAsync(int studentId)
+        {
+            return await _context.Projects
+                .Where(p => p.StudentId == studentId)
+                .ToListAsync();
+        }
 
     }
 }

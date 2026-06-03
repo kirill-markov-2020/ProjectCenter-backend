@@ -26,7 +26,7 @@ namespace ProjectCenter.Application.Interfaces
         Task DeleteTeacherAsync(Teacher teacher);
         Task UpdateUserAsync(User user);
         Task<Student?> GetStudentByUserIdAsync(int userId);
-
+        Task<Teacher?> GetTeacherByIdAsync(int teacherId);
 
 
     }
