@@ -11,6 +11,7 @@ namespace ProjectCenter.Application.DTOs
         public int Id { get; set; }
         public string FullName { get; set; }
         public string? GroupName { get; set; }
+        public int? Course { get; set; }
         public int ProjectId { get; set; }
         public string ProjectTitle { get; set; }
         public string ProjectStatus { get; set; }

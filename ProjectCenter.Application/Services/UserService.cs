@@ -1,9 +1,7 @@
 ﻿using AutoMapper;
 using Azure.Core;
 using BCrypt.Net;
-using ProjectCenter.Application.DTOs;
-using ProjectCenter.Application.DTOs.CreateUser;
-using ProjectCenter.Application.DTOs.UpdateUser;
+using ProjectCenter.Application.DTOs.User;
 using ProjectCenter.Application.Interfaces;
 using ProjectCenter.Core.Entities;
 using ProjectCenter.Core.Exceptions;
@@ -70,6 +68,11 @@ namespace ProjectCenter.Application.Services
             {
                 if (!dto.GroupId.HasValue || !dto.TeacherId.HasValue)
                     throw new InvalidStudentDataException("Для роли 'Student' необходимо указать GroupId и TeacherId.");
+                if (!dto.DateEnrolled.HasValue)
+                    throw new InvalidStudentDataException("Для студента необходимо указать дату зачисления.");
+
+                if (dto.DateEnrolled.Value > DateTime.Now)
+                    throw new InvalidStudentDataException("Дата зачисления не может быть в будущем.");
             }
             else
             {
@@ -118,7 +121,9 @@ namespace ProjectCenter.Application.Services
                 {
                     UserId = user.Id,
                     GroupId = dto.GroupId!.Value,
-                    TeacherId = dto.TeacherId!.Value
+                    TeacherId = dto.TeacherId!.Value,
+                    DateEnrolled = dto.DateEnrolled!.Value,
+                    DateGraduated = null
                 };
                 isStudent = true;
                 studentFullName = $"{user.Surname} {user.Name} {user.Patronymic}".Trim();
@@ -177,15 +182,38 @@ namespace ProjectCenter.Application.Services
             return _mapper.Map<List<UserDto>>(users);
         }
 
-        public async Task DeleteUserAsync(int id)
+        public async Task DeleteUserAsync(int id, DeleteUserRequestDto? dto = null)
         {
-            var user = await _userRepository.GetByIdAsync(id);
+            var user = await _userRepository.GetFullUserByIdAsync(id);
             if (user == null)
                 throw new ArgumentException("Пользователь не найден.");
 
-            int? curatorUserId = null;
-            string? studentFullName = null;
-            string? groupName = null;
+            if (user.Student != null)
+            {
+                DateTime graduationDate = dto?.GraduationDate ?? DateTime.Now;
+
+                if (graduationDate < user.Student.DateEnrolled)
+                    throw new InvalidStudentDataException("Дата выпуска/отчисления не может быть раньше даты зачисления.");
+
+                user.Student.DateGraduated = graduationDate;
+
+
+                await _userRepository.UpdateUserAsync(user);
+
+                var curator = await _userRepository.GetTeacherByIdAsync(user.Student.TeacherId);
+                if (curator != null)
+                {
+                    var studentFullName = $"{user.Surname} {user.Name} {user.Patronymic}".Trim();
+                    var groupName = user.Student.Group?.Name ?? "не указана";
+                    await _notificationService.SendStudentDeletedNotificationForCuratorAsync(
+                        curator.UserId,
+                        studentFullName,
+                        groupName
+                    );
+                }
+
+                return;
+            }
 
             if (user.Teacher != null)
             {
@@ -193,45 +221,44 @@ namespace ProjectCenter.Application.Services
                 bool hasStudents = students.Any(s => s.Student != null && s.Student.TeacherId == user.Teacher.Id);
 
                 if (hasStudents)
-                    throw new TeacherHasStudentsException();
+                    throw new TeacherHasStudentsException("Невозможно удалить преподавателя, у которого есть закрепленные студенты.");
 
                 await _userRepository.DeleteTeacherAsync(user.Teacher);
+                await _userRepository.DeleteUserAsync(user);
+                return;
             }
-            else if (user.Student != null)
+
+            if (user.IsAdmin)
             {
-                studentFullName = $"{user.Surname} {user.Name} {user.Patronymic}".Trim();
-                groupName = user.Student.Group?.Name ?? "не указана";
-
-                var curator = await _userRepository.GetTeacherByIdAsync(user.Student.TeacherId);
-                if (curator != null)
-                {
-                    curatorUserId = curator.UserId;
-                }
-
-                var projects = await _projectRepository.GetProjectsByStudentIdAsync(user.Student.Id);
-                foreach (var project in projects)
-                {
-                    if (!string.IsNullOrEmpty(project.FileProject))
-                        _fileService.DeleteProjectFile(project.FileProject);
-
-                    if (!string.IsNullOrEmpty(project.FileDocumentation))
-                        _fileService.DeleteDocumentationFile(project.FileDocumentation);
-                    await _projectRepository.DeleteProjectAsync(project);
-                }
-
-                await _userRepository.DeleteStudentAsync(user.Student);
+                await _userRepository.DeleteUserAsync(user);
+                return;
             }
+        }
 
-            await _userRepository.DeleteUserAsync(user);
+        public async Task<List<UserDto>> GetActiveUsersAsync()
+        {
+            var users = await _userRepository.GetAllAsync();
 
-            if (curatorUserId.HasValue && curatorUserId.Value > 0 && studentFullName != null)
-            {
-                await _notificationService.SendStudentDeletedNotificationForCuratorAsync(
-                    curatorUserId.Value,
-                    studentFullName,
-                    groupName
-                );
-            }
+            var activeUsers = users.Where(u =>
+                u.Student == null ||
+                !u.Student.DateGraduated.HasValue ||
+                u.Student.DateGraduated.Value > DateTime.Now
+            ).ToList();
+
+            return _mapper.Map<List<UserDto>>(activeUsers);
+        }
+
+        public async Task<List<UserDto>> GetGraduatedUsersAsync()
+        {
+            var users = await _userRepository.GetAllAsync();
+
+            var graduatedUsers = users.Where(u =>
+                u.Student != null &&
+                u.Student.DateGraduated.HasValue &&
+                u.Student.DateGraduated.Value <= DateTime.Now
+            ).ToList();
+
+            return _mapper.Map<List<UserDto>>(graduatedUsers);
         }
         public async Task<UserDto> GetMyProfileAsync(int userId)
         {
@@ -371,6 +398,15 @@ namespace ProjectCenter.Application.Services
 
                 if (dto.CuratorId.HasValue)
                     user.Student.TeacherId = dto.CuratorId.Value;
+                if (dto.DateEnrolled.HasValue)
+                    user.Student.DateEnrolled = dto.DateEnrolled.Value;
+                if (user.Student.DateEnrolled > DateTime.Now)
+                    throw new InvalidStudentDataException("Дата зачисления не может быть в будущем.");
+
+                if (user.Student.DateGraduated.HasValue && user.Student.DateGraduated.Value <= user.Student.DateEnrolled)
+                    throw new InvalidStudentDataException("Дата выпуска должна быть позже даты зачисления.");
+                if (dto.DateGraduated.HasValue)
+                    user.Student.DateGraduated = dto.DateGraduated.Value;
 
                 if (user.Student.GroupId == 0 || user.Student.TeacherId == 0)
                     throw new InvalidStudentDataException("Для студента должны быть указаны GroupId и TeacherId.");

@@ -1,6 +1,7 @@
 ﻿using AutoMapper;
 using ProjectCenter.Application.DTOs;
 using ProjectCenter.Core.Entities;
+using ProjectCenter.Core.ValueObjects;
 
 namespace ProjectCenter.Application.Mappings
 {
@@ -12,7 +13,10 @@ namespace ProjectCenter.Application.Mappings
             CreateMap<Project, ProjectDto>()
                 .ForMember(dest => dest.StudentName, opt => opt.MapFrom(src =>
                     $"{src.Student.User.Surname} {src.Student.User.Name} {src.Student.User.Patronymic}".Trim()))
-
+                .ForMember(dest => dest.StudentGroup, opt => opt.MapFrom(src =>
+                    src.Student != null
+                        ? StudentCourseCalculator.GetFullGroupName(src.Student, DateTime.Now)
+                        : "Группа не указана"))
                 .ForMember(dest => dest.TeacherName, opt => opt.MapFrom(src =>
                     src.Teacher != null && src.Teacher.User != null
                         ? $"{src.Teacher.User.Surname} {src.Teacher.User.Name} {src.Teacher.User.Patronymic}".Trim()

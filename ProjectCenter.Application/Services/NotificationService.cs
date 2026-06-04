@@ -443,12 +443,12 @@ namespace ProjectCenter.Application.Services
         }
         public async Task SendStudentDeletedNotificationForCuratorAsync(int curatorUserId, string studentFullName, string groupName)
         {
-            var text = $"Студент {studentFullName} (группа {groupName}) был удалён из системы.";
+            var text = $"Студент {studentFullName} (группа {groupName}) был отчислен.";
 
             var notification = new Notification
             {
                 RecipientId = curatorUserId,
-                Title = "Студент удалён",
+                Title = "Студент отчислен",
                 Text = text,
                 CreatedAt = DateTime.Now,
                 IsRead = false,

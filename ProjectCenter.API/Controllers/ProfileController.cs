@@ -1,6 +1,6 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using ProjectCenter.Application.DTOs.UpdateUser;
+using ProjectCenter.Application.DTOs.User;
 using ProjectCenter.Application.Interfaces;
 
 namespace ProjectCenter.Api.Controllers

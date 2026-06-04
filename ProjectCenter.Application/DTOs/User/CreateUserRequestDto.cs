@@ -1,4 +1,4 @@
-﻿namespace ProjectCenter.Application.DTOs.CreateUser
+﻿namespace ProjectCenter.Application.DTOs.User
 {
     public class CreateUserRequestDto
     {
@@ -15,5 +15,6 @@
 
         public int? GroupId { get; set; }
         public int? TeacherId { get; set; }
+        public DateTime? DateEnrolled { get; set; }
     }
 }

@@ -1,6 +1,7 @@
 ﻿using AutoMapper;
-using ProjectCenter.Application.DTOs;
+using ProjectCenter.Application.DTOs.User;
 using ProjectCenter.Core.Entities;
+using ProjectCenter.Core.ValueObjects;
 
 public class UserProfile : Profile
 {
@@ -16,7 +17,9 @@ public class UserProfile : Profile
                 opt => opt.MapFrom(src => src.Photo))
             .ForMember(dest => dest.GroupName,
                 opt => opt.MapFrom(src =>
-                    src.Student != null ? src.Student.Group.Name : null))
+                    src.Student != null
+                        ? StudentCourseCalculator.GetFullGroupName(src.Student, DateTime.Now)
+                        : null))
             .ForMember(dest => dest.CuratorName,
                 opt => opt.MapFrom(src =>
                     src.Student != null && src.Student.Teacher != null

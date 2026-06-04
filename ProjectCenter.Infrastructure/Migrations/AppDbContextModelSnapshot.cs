@@ -335,6 +335,12 @@ namespace ProjectCenter.Infrastructure.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
+                    b.Property<DateTime>("DateEnrolled")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime?>("DateGraduated")
+                        .HasColumnType("datetime2");
+
                     b.Property<int>("GroupId")
                         .HasColumnType("int");
 

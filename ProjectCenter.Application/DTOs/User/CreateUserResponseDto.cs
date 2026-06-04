@@ -1,4 +1,4 @@
-﻿namespace ProjectCenter.Application.DTOs.CreateUser
+﻿namespace ProjectCenter.Application.DTOs.User
 {
     public class CreateUserResponseDto
     {

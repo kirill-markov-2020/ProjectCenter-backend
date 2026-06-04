@@ -1,4 +1,4 @@
-﻿namespace ProjectCenter.Application.DTOs.UpdateUser
+﻿namespace ProjectCenter.Application.DTOs.User
 {
     public class UpdateUserRequestDto
     {
@@ -14,5 +14,7 @@
 
         public int? GroupId { get; set; }
         public int? CuratorId { get; set; }
+        public DateTime? DateEnrolled { get; set; }    
+        public DateTime? DateGraduated { get; set; }
     }
 }

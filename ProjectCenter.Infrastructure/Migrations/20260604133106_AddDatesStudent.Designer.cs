@@ -12,8 +12,8 @@ using ProjectCenter.Infrastructure.Persistence.Contexts;
 namespace ProjectCenter.Infrastructure.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20260602150358_InitialCreate")]
-    partial class InitialCreate
+    [Migration("20260604133106_AddDatesStudent")]
+    partial class AddDatesStudent
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -337,6 +337,12 @@ namespace ProjectCenter.Infrastructure.Migrations
                         .HasColumnType("int");
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<DateTime>("DateEnrolled")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime?>("DateGraduated")
+                        .HasColumnType("datetime2");
 
                     b.Property<int>("GroupId")
                         .HasColumnType("int");

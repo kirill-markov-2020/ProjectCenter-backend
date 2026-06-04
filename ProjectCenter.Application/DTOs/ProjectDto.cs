@@ -5,6 +5,7 @@ public class ProjectDto
     public int Id { get; set; }
     public string Title { get; set; }
     public string StudentName { get; set; }
+    public string StudentGroup { get; set; }
     public string TeacherName { get; set; }
     public string StatusName { get; set; }
     public string TypeName { get; set; }

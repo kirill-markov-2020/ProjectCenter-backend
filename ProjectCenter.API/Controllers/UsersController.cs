@@ -1,8 +1,7 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using ProjectCenter.Application.DTOs.UpdateUser;
-using ProjectCenter.Application.DTOs.CreateUser;
- using ProjectCenter.Application.Interfaces;
+using ProjectCenter.Application.DTOs.User;
+using ProjectCenter.Application.Interfaces;
 
 namespace ProjectCenter.Api.Controllers
 {
@@ -32,10 +31,24 @@ namespace ProjectCenter.Api.Controllers
             return Ok(users);
         }
         [HttpDelete("{id}")]
-        public async Task<IActionResult> DeleteUser(int id)
+        public async Task<IActionResult> DeleteUser(int id, [FromBody] DeleteUserRequestDto? dto = null)
         {
-            await _userService.DeleteUserAsync(id);
+            await _userService.DeleteUserAsync(id, dto);
             return NoContent();
+        }
+
+        [HttpGet("active")]
+        public async Task<IActionResult> GetActiveUsers()
+        {
+            var users = await _userService.GetActiveUsersAsync();
+            return Ok(users);
+        }
+
+        [HttpGet("graduated")]
+        public async Task<IActionResult> GetGraduatedUsers()
+        {
+            var users = await _userService.GetGraduatedUsersAsync();
+            return Ok(users);
         }
         [HttpPut("{id}")]
         public async Task<IActionResult> UpdateUser(int id, [FromBody] UpdateUserRequestDto dto)

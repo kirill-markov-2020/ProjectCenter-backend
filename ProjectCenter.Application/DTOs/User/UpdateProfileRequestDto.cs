@@ -1,6 +1,6 @@
 ﻿using Microsoft.AspNetCore.Http;
 
-namespace ProjectCenter.Application.DTOs.UpdateUser
+namespace ProjectCenter.Application.DTOs.User
 {
     public class UpdateProfileRequestDto
     {

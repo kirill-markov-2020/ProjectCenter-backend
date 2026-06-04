@@ -3,6 +3,7 @@ using ProjectCenter.Application.DTOs.Directory;
 
 using ProjectCenter.Application.Interfaces;
 using ProjectCenter.Core.Exceptions;
+using ProjectCenter.Core.ValueObjects;
 
 namespace ProjectCenter.Application.Services
 {
@@ -48,11 +49,13 @@ namespace ProjectCenter.Application.Services
                 .Select(s =>
                 {
                     var project = s.Projects.First();
+                    var course = StudentCourseCalculator.GetCurrentCourse(s, DateTime.Now);
                     return new StudentShortDto
                     {
                         Id = s.Id,
                         FullName = $"{s.User.Surname} {s.User.Name} {s.User.Patronymic}".Trim(),
-                        GroupName = s.Group?.Name,
+                        GroupName = StudentCourseCalculator.GetFullGroupName(s, DateTime.Now),
+                        Course = course,
                         ProjectId = project.Id,
                         ProjectTitle = project.Title,
                         ProjectStatus = project.Status.Name,
