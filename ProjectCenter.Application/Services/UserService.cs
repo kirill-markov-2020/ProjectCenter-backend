@@ -204,7 +204,20 @@ namespace ProjectCenter.Application.Services
                 if (curator != null)
                 {
                     var studentFullName = $"{user.Surname} {user.Name} {user.Patronymic}".Trim();
-                    var groupName = user.Student.Group?.Name ?? "не указана";
+                    string groupName;
+                    if (user.Student?.Group != null)
+                    {
+                        groupName = GroupFormatter.GetFullName(
+                            user.Student.Group.SpecialtyCode,
+                            user.Student.Group.BaseName,
+                            user.Student.DateEnrolled,
+                            DateTime.Now
+                        );
+                    }
+                    else
+                    {
+                        groupName = "не указана";
+                    }
                     await _notificationService.SendStudentDeletedNotificationForCuratorAsync(
                         curator.UserId,
                         studentFullName,

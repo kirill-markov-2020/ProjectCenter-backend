@@ -11,7 +11,7 @@
         public string Phone { get; set; }
         public string Role { get; set; }
         public string? Photo { get; set; }
-        public string? GroupName { get; set; }
+        public string? GroupDisplayName { get; set; }
         public string? CuratorName { get; set; }
 
     }

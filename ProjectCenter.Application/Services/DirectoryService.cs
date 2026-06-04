@@ -28,8 +28,15 @@ namespace ProjectCenter.Application.Services
                 .ToList();
 
         public async Task<List<GroupDto>> GetGroupsAsync()
-            => (await _repo.GetGroupsAsync())
-                .Select(g => new GroupDto { Id = g.Id, Name = g.Name })
-                .ToList();
+        {
+            var groups = await _repo.GetGroupsAsync();
+            return groups.Select(g => new GroupDto
+            {
+                Id = g.Id,
+                SpecialtyCode = g.SpecialtyCode,
+                BaseName = g.BaseName,
+                FullName = $"{g.SpecialtyCode}-{g.BaseName}"  
+            }).ToList();
+        }
     }
 }

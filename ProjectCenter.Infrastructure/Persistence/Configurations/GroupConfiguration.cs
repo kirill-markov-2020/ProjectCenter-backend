@@ -9,7 +9,8 @@ namespace ProjectCenter.Infrastructure.Persistence.Configurations
         public void Configure(EntityTypeBuilder<Group> builder)
         {
             builder.ToTable("Group");
-            builder.Property(g => g.Name).HasMaxLength(50).IsRequired();
+            builder.Property(g => g.SpecialtyCode).HasMaxLength(20).IsRequired();
+            builder.Property(g => g.BaseName).HasMaxLength(20).IsRequired();
         }
     }
 }

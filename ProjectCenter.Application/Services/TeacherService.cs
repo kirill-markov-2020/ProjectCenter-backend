@@ -54,7 +54,12 @@ namespace ProjectCenter.Application.Services
                     {
                         Id = s.Id,
                         FullName = $"{s.User.Surname} {s.User.Name} {s.User.Patronymic}".Trim(),
-                        GroupName = StudentCourseCalculator.GetFullGroupName(s, DateTime.Now),
+                        GroupName = GroupFormatter.GetFullName(
+                            s.Group.SpecialtyCode,
+                            s.Group.BaseName,
+                            s.DateEnrolled,
+                            DateTime.Now
+                        ),
                         Course = course,
                         ProjectId = project.Id,
                         ProjectTitle = project.Title,
