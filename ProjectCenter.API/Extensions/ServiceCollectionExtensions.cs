@@ -104,13 +104,20 @@ namespace ProjectCenter.API.Extensions
         }
 
   
-        public static IServiceCollection AddCustomCors(this IServiceCollection services)
+        public static IServiceCollection AddCustomCors(this IServiceCollection services, IConfiguration configuration)
         {
             services.AddCors(options =>
             {
+                var allowedOrigins = configuration.GetSection("Cors:AllowedOrigins").Get<string[]>();
+
+                if (allowedOrigins == null || allowedOrigins.Length == 0)
+                {
+                    allowedOrigins = Array.Empty<string>();
+                }
+
                 options.AddDefaultPolicy(policy =>
                 {
-                    policy.WithOrigins("http://localhost:5173", "http://localhost:3000")
+                    policy.WithOrigins(allowedOrigins)
                           .AllowAnyHeader()
                           .AllowAnyMethod()
                           .AllowCredentials();
@@ -127,7 +134,7 @@ namespace ProjectCenter.API.Extensions
             services.AddRepositories();
             services.AddApplicationServices();
             services.AddCustomAutoMapper();
-            services.AddCustomCors();
+            services.AddCustomCors(configuration);
 
             return services;
         }

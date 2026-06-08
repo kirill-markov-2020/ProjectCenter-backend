@@ -22,7 +22,7 @@ namespace ProjectCenter.Infrastructure.Persistence.Configurations
 
             builder.Property(n => n.CreatedAt)
                 .IsRequired()
-                .HasDefaultValueSql("GETUTCDATE()");
+                .HasDefaultValueSql("GETDATE()");
 
             builder.Property(n => n.IsRead)
                 .IsRequired()
