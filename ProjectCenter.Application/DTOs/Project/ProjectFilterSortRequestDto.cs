@@ -10,7 +10,7 @@ namespace ProjectCenter.Application.DTOs.Project
         public int? TypeId { get; set; }
         public int? SubjectId { get; set; }
         public bool? IsPublic { get; set; }
-        public string? SearchTerm { get; set; }
+        public string? SearchText { get; set; }
 
    
     }

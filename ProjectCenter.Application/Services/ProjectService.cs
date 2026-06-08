@@ -73,6 +73,8 @@ namespace ProjectCenter.Application.Services
             var activeProject = await _projectRepository.GetActiveProjectByStudentIdAsync(student.Id);
             if (activeProject != null)
                 throw new ActiveProjectExistsException(activeProject.Title);
+            if (dto.Year < 2020 || dto.Year > DateTime.Now.Year + 5)
+                throw new ArgumentException("Некорректный год проекта");
 
             var project = new Project
             {
@@ -86,7 +88,8 @@ namespace ProjectCenter.Application.Services
                 FileProject = null,
                 FileDocumentation = null,
                 DateDeadline = new DateTime(DateTime.Now.Year + 1, 6, 30),
-                CreatedDate = DateTime.Now
+                CreatedDate = DateTime.Now,
+                Year = dto.Year
             };
 
             await _projectRepository.AddProjectAsync(project);
@@ -124,6 +127,8 @@ namespace ProjectCenter.Application.Services
 
             if (dto.StatusId.HasValue)
                 project.StatusId = dto.StatusId.Value;
+            if (dto.Year.HasValue)
+                project.Year = dto.Year.Value;
 
             if (dto.TypeId.HasValue)
                 project.TypeId = dto.TypeId.Value;
@@ -137,6 +142,8 @@ namespace ProjectCenter.Application.Services
             if (!string.IsNullOrWhiteSpace(dto.FileDocumentation))
                 project.FileDocumentation = dto.FileDocumentation;
 
+            if (dto.IsPublic.HasValue)
+                project.IsPublic = dto.IsPublic.Value;
             if (dto.IsPublic.HasValue)
                 project.IsPublic = dto.IsPublic.Value;
 
@@ -457,7 +464,10 @@ namespace ProjectCenter.Application.Services
                     newTypeName = newType?.Name ?? "неизвестный тип";
                 }
             }
-
+            if (dto.Year.HasValue)
+            {
+                project.Year = dto.Year.Value;
+            }
             if (dto.SubjectId.HasValue)
             {
                 var oldSubjectId = project.SubjectId;

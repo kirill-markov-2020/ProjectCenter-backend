@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace ProjectCenter.Infrastructure.Migrations
 {
     /// <inheritdoc />
-    public partial class Addgroupes : Migration
+    public partial class upda : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -56,8 +56,7 @@ namespace ProjectCenter.Infrastructure.Migrations
                 {
                     Id = table.Column<int>(type: "int", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
-                    SpecialtyCode = table.Column<string>(type: "nvarchar(20)", maxLength: 20, nullable: false),
-                    BaseName = table.Column<string>(type: "nvarchar(20)", maxLength: 20, nullable: false)
+                    Name = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: false)
                 },
                 constraints: table =>
                 {
@@ -146,7 +145,7 @@ namespace ProjectCenter.Infrastructure.Migrations
                     RecipientId = table.Column<int>(type: "int", nullable: false),
                     Title = table.Column<string>(type: "nvarchar(200)", maxLength: 200, nullable: false),
                     Text = table.Column<string>(type: "nvarchar(1000)", maxLength: 1000, nullable: false),
-                    CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false, defaultValueSql: "GETUTCDATE()"),
+                    CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false, defaultValueSql: "GETDATE()"),
                     IsRead = table.Column<bool>(type: "bit", nullable: false, defaultValue: false),
                     TypeId = table.Column<int>(type: "int", nullable: false)
                 },
@@ -279,7 +278,8 @@ namespace ProjectCenter.Infrastructure.Migrations
                     FileDocumentation = table.Column<string>(type: "nvarchar(500)", maxLength: 500, nullable: true),
                     IsPublic = table.Column<bool>(type: "bit", nullable: false),
                     DateDeadline = table.Column<DateTime>(type: "datetime2", nullable: false),
-                    CreatedDate = table.Column<DateTime>(type: "datetime2", nullable: false)
+                    CreatedDate = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    Year = table.Column<int>(type: "int", nullable: false, defaultValue: 2026)
                 },
                 constraints: table =>
                 {

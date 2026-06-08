@@ -13,5 +13,6 @@ namespace ProjectCenter.Application.DTOs.Project
         public int? TypeId { get; set; }
         public int? SubjectId { get; set; }
         public DateTime? DateDeadline { get; set; }
+        public int? Year { get; set; }
     }
 }

@@ -33,9 +33,7 @@ namespace ProjectCenter.Application.Services
             return groups.Select(g => new GroupDto
             {
                 Id = g.Id,
-                SpecialtyCode = g.SpecialtyCode,
-                BaseName = g.BaseName,
-                FullName = $"{g.SpecialtyCode}-{g.BaseName}"  
+                Name = g.Name,
             }).ToList();
         }
     }

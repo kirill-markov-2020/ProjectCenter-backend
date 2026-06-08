@@ -6,6 +6,7 @@
         public int? TeacherId { get; set; }
         public int? StatusId { get; set; }
         public int? TypeId { get; set; }
+        public int? Year { get; set; }
         public int? SubjectId { get; set; }
         public string? FileProject { get; set; }
         public string? FileDocumentation { get; set; }

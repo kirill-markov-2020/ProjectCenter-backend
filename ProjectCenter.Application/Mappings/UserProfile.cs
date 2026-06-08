@@ -17,11 +17,7 @@ public class UserProfile : Profile
                 opt => opt.MapFrom(src => src.Photo))
             .ForMember(dest => dest.GroupDisplayName, opt => opt.MapFrom(src =>
                 src.Student != null && src.Student.Group != null
-                    ? GroupFormatter.GetFullName(
-                        src.Student.Group.SpecialtyCode,
-                        src.Student.Group.BaseName,
-                        src.Student.DateEnrolled,
-                        DateTime.Now)
+                    ? src.Student.Group.Name
                     : null))
             .ForMember(dest => dest.CuratorName,
                 opt => opt.MapFrom(src =>

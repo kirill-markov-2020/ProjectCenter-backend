@@ -17,7 +17,7 @@ public class Project
     public bool IsPublic { get; set; }
     public DateTime DateDeadline { get; set; }
     public DateTime CreatedDate { get; set; }
-
+    public int Year { get; set; }
     public virtual Student Student { get; set; }
     public virtual Teacher Teacher { get; set; }
     public virtual StatusProject Status { get; set; }

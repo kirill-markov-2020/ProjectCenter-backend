@@ -54,12 +54,7 @@ namespace ProjectCenter.Application.Services
                     {
                         Id = s.Id,
                         FullName = $"{s.User.Surname} {s.User.Name} {s.User.Patronymic}".Trim(),
-                        GroupName = GroupFormatter.GetFullName(
-                            s.Group.SpecialtyCode,
-                            s.Group.BaseName,
-                            s.DateEnrolled,
-                            DateTime.Now
-                        ),
+                        GroupName = s.Group?.Name ?? "Группа не указана",
                         Course = course,
                         ProjectId = project.Id,
                         ProjectTitle = project.Title,

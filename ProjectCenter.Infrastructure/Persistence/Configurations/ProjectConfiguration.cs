@@ -49,6 +49,9 @@ namespace ProjectCenter.Infrastructure.Persistence.Configurations
                    .WithOne(c => c.Project)
                    .HasForeignKey(c => c.ProjectId)
                    .OnDelete(DeleteBehavior.Cascade);
+            builder.Property(p => p.Year)
+                    .IsRequired()
+                    .HasDefaultValue(DateTime.Now.Year);
         }
     }
 }

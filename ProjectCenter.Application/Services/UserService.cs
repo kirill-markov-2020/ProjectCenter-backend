@@ -207,12 +207,7 @@ namespace ProjectCenter.Application.Services
                     string groupName;
                     if (user.Student?.Group != null)
                     {
-                        groupName = GroupFormatter.GetFullName(
-                            user.Student.Group.SpecialtyCode,
-                            user.Student.Group.BaseName,
-                            user.Student.DateEnrolled,
-                            DateTime.Now
-                        );
+                        groupName = user.Student.Group.Name;
                     }
                     else
                     {
