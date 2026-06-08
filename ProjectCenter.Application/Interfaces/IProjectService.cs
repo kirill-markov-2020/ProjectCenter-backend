@@ -1,9 +1,10 @@
-﻿using ProjectCenter.Application.DTOs.UpdateProject;
+﻿using ProjectCenter.Application.DTOs.Project;
+using ProjectCenter.Core.Enums;
 
 
 public interface IProjectService
 {
-    Task<List<ProjectDto>> GetProjectsForUserAsync(int userId);
+    Task<List<ProjectDto>> GetProjectsForUserAsync(int userId, ProjectSortBy? sortBy = null);
     Task<ProjectDto> GetProjectByIdAsync(int id);
 
     

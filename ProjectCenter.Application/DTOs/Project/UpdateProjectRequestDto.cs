@@ -1,4 +1,4 @@
-﻿namespace ProjectCenter.Application.DTOs.UpdateProject
+﻿namespace ProjectCenter.Application.DTOs.Project
 {
     public class UpdateProjectRequestDto
     {

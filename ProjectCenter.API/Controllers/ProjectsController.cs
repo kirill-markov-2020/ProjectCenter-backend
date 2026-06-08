@@ -1,8 +1,9 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using ProjectCenter.Application.DTOs.Project;
 using ProjectCenter.Application.DTOs;
-using ProjectCenter.Application.DTOs.UpdateProject;
 using ProjectCenter.Application.Interfaces;
+using ProjectCenter.Core.Enums;
 using System.Security.Claims;
 
 namespace ProjectCenter.Api.Controllers
@@ -21,7 +22,7 @@ namespace ProjectCenter.Api.Controllers
 
         
         [HttpGet]
-        public async Task<IActionResult> GetProjects()
+        public async Task<IActionResult> GetProjects([FromQuery] ProjectSortBy? sortBy)
         {
             if (!HttpContext.Items.ContainsKey("UserId"))
                 return Unauthorized();
@@ -31,7 +32,7 @@ namespace ProjectCenter.Api.Controllers
 
             bool isAdmin = role == "Admin";
 
-            var projects = await _projectService.GetProjectsForUserAsync(userId);
+            var projects = await _projectService.GetProjectsForUserAsync(userId, sortBy);
             return Ok(projects);
         }
         [HttpGet("{id}")]

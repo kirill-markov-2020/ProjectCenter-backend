@@ -1,6 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using ProjectCenter.Application.Interfaces;
 using ProjectCenter.Core.Entities;
+using ProjectCenter.Core.Enums;
 using ProjectCenter.Infrastructure.Persistence.Contexts;
 
 namespace ProjectCenter.Infrastructure.Persistence.Repositories
@@ -145,6 +146,68 @@ namespace ProjectCenter.Infrastructure.Persistence.Repositories
             return await _context.Projects
                 .Where(p => p.StudentId == studentId)
                 .ToListAsync();
+        }
+        public async Task<List<Project>> GetAllProjectsWithSortingAsync(ProjectSortBy? sortBy)
+        {
+            var query = _context.Projects
+                .Include(p => p.Student)
+                    .ThenInclude(s => s.User)
+                .Include(p => p.Student)
+                    .ThenInclude(s => s.Group)
+                .Include(p => p.Teacher)
+                    .ThenInclude(t => t.User)
+                .Include(p => p.Status)
+                .Include(p => p.Type)
+                .Include(p => p.Subject)
+                .Include(p => p.Comments)
+                    .ThenInclude(c => c.User)
+                .Include(p => p.Grade)
+                    .ThenInclude(g => g.Teacher)
+                        .ThenInclude(t => t.User)
+                .AsQueryable();
+
+            query = sortBy switch
+            {
+                ProjectSortBy.CreatedDateAsc => query.OrderBy(p => p.CreatedDate),
+                ProjectSortBy.CreatedDateDesc => query.OrderByDescending(p => p.CreatedDate),
+                ProjectSortBy.DeadlineAsc => query.OrderBy(p => p.DateDeadline),
+                ProjectSortBy.DeadlineDesc => query.OrderByDescending(p => p.DateDeadline),
+                _ => query.OrderByDescending(p => p.CreatedDate) 
+            };
+
+            return await query.ToListAsync();
+        }
+
+        public async Task<List<Project>> GetPublicProjectsWithSortingAsync(ProjectSortBy? sortBy)
+        {
+            var query = _context.Projects
+                .Where(p => p.IsPublic)
+                .Include(p => p.Student)
+                    .ThenInclude(s => s.User)
+                .Include(p => p.Student)
+                    .ThenInclude(s => s.Group)
+                .Include(p => p.Teacher)
+                    .ThenInclude(t => t.User)
+                .Include(p => p.Status)
+                .Include(p => p.Type)
+                .Include(p => p.Subject)
+                .Include(p => p.Comments)
+                    .ThenInclude(c => c.User)
+                .Include(p => p.Grade)
+                    .ThenInclude(g => g.Teacher)
+                        .ThenInclude(t => t.User)
+                .AsQueryable();
+
+            query = sortBy switch
+            {
+                ProjectSortBy.CreatedDateAsc => query.OrderBy(p => p.CreatedDate),
+                ProjectSortBy.CreatedDateDesc => query.OrderByDescending(p => p.CreatedDate),
+                ProjectSortBy.DeadlineAsc => query.OrderBy(p => p.DateDeadline),
+                ProjectSortBy.DeadlineDesc => query.OrderByDescending(p => p.DateDeadline),
+                _ => query.OrderByDescending(p => p.CreatedDate)
+            };
+
+            return await query.ToListAsync();
         }
 
     }

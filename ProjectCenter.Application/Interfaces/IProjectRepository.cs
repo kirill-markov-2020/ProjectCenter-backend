@@ -1,4 +1,5 @@
 ﻿using ProjectCenter.Core.Entities;
+using ProjectCenter.Core.Enums;
 
 namespace ProjectCenter.Application.Interfaces
 {
@@ -14,6 +15,8 @@ namespace ProjectCenter.Application.Interfaces
         Task DeleteProjectAsync(Project project);
         Task<Project?> GetProjectByIdAndTeacherIdAsync(int projectId, int teacherId);
         Task<List<Project>> GetProjectsByStudentIdAsync(int studentId);
+        Task<List<Project>> GetAllProjectsWithSortingAsync(ProjectSortBy? sortBy);
+        Task<List<Project>> GetPublicProjectsWithSortingAsync(ProjectSortBy? sortBy);
 
     }
 }

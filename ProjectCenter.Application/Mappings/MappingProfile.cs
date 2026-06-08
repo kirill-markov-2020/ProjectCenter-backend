@@ -1,4 +1,5 @@
 ﻿using AutoMapper;
+using ProjectCenter.Application.DTOs.Project;
 using ProjectCenter.Application.DTOs;
 using ProjectCenter.Core.Entities;
 using ProjectCenter.Core.ValueObjects;

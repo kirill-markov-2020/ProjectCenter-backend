@@ -5,7 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 
 
-namespace ProjectCenter.Application.DTOs.UpdateProject
+namespace ProjectCenter.Application.DTOs.Project
 {
     public class UpdateTeacherProjectRequestDto
     {

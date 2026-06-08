@@ -1,9 +1,10 @@
 ﻿using AutoMapper;
 using Microsoft.EntityFrameworkCore;
 using ProjectCenter.Application.DTOs;
-using ProjectCenter.Application.DTOs.UpdateProject;
+using ProjectCenter.Application.DTOs.Project;
 using ProjectCenter.Application.Interfaces;
 using ProjectCenter.Core.Entities;
+using ProjectCenter.Core.Enums;
 using ProjectCenter.Core.Exceptions;
 
 namespace ProjectCenter.Application.Services
@@ -28,27 +29,26 @@ namespace ProjectCenter.Application.Services
         }
 
 
-        // ProjectCenter.Application/Services/ProjectService.cs
-        public async Task<List<ProjectDto>> GetProjectsForUserAsync(int userId)
+        public async Task<List<ProjectDto>> GetProjectsForUserAsync(int userId, ProjectSortBy? sortBy = null)
         {
             var user = await _userRepository.GetFullUserByIdAsync(userId);
-
+            var effectiveSortBy = sortBy ?? ProjectSortBy.CreatedDateDesc;
             // Админ — все проекты
             if (user.IsAdmin)
             {
-                var allProjects = await _projectRepository.GetAllProjectsAsync();
+                var allProjects = await _projectRepository.GetAllProjectsWithSortingAsync(effectiveSortBy);
                 return _mapper.Map<List<ProjectDto>>(allProjects);
             }
 
             // Учитель — все проекты (тоже)
             if (user.Teacher != null)
             {
-                var allProjects = await _projectRepository.GetAllProjectsAsync();
+                var allProjects = await _projectRepository.GetAllProjectsWithSortingAsync(effectiveSortBy);
                 return _mapper.Map<List<ProjectDto>>(allProjects);
             }
 
             // Студент — только публичные
-            var publicProjects = await _projectRepository.GetPublicProjectsAsync();
+            var publicProjects = await _projectRepository.GetPublicProjectsWithSortingAsync(effectiveSortBy);
             return _mapper.Map<List<ProjectDto>>(publicProjects);
         }
         public async Task<ProjectDto> GetProjectByIdAsync(int id)
