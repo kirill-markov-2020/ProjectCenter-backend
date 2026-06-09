@@ -22,18 +22,28 @@ namespace ProjectCenter.Api.Controllers
 
 
         [HttpGet]
-        public async Task<IActionResult> GetProjects([FromQuery] string? searchText, [FromQuery] ProjectSortBy? sortBy)
+        public async Task<IActionResult> GetProjects(
+            [FromQuery] string? searchText,
+            [FromQuery] int? year,
+            [FromQuery] int? groupId,
+            [FromQuery] ProjectSortBy? sortBy)
         {
             if (!HttpContext.Items.ContainsKey("UserId"))
                 return Unauthorized();
 
             int userId = (int)HttpContext.Items["UserId"];
-            string role = HttpContext.Items["UserRole"]?.ToString() ?? "User";
 
-            bool isAdmin = role == "Admin";
+            var projects = await _projectService.GetProjectsForUserAsync(
+                userId, searchText, year, groupId, sortBy);
 
-            var projects = await _projectService.GetProjectsForUserAsync(userId, searchText, sortBy);
             return Ok(projects);
+        }
+
+        [HttpGet("groups/by-year")]
+        public async Task<IActionResult> GetGroupsByYear([FromQuery] int year)
+        {
+            var groups = await _projectService.GetAvailableGroupsForYearAsync(year);
+            return Ok(groups);
         }
         [HttpGet("{id}")]
         public async Task<IActionResult> GetProjectById(int id)

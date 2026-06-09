@@ -147,7 +147,20 @@ namespace ProjectCenter.Infrastructure.Persistence.Repositories
                 .Where(p => p.StudentId == studentId)
                 .ToListAsync();
         }
-        public async Task<List<Project>> GetAllProjectsWithSearchAsync(string? searchText, ProjectSortBy? sortBy)
+        public async Task<List<Project>> GetProjectsByYearAsync(int year)
+        {
+            return await _context.Projects
+                .Include(p => p.Student)
+                    .ThenInclude(s => s.Group)
+                .Where(p => p.Year == year)
+                .ToListAsync();
+        }
+        public async Task<List<Project>> GetProjectsFilteredAsync(
+            string? searchTerm = null,
+            int? year = null,
+            int? groupId = null,
+            
+            ProjectSortBy? sortBy = null)
         {
             var query = _context.Projects
                 .Include(p => p.Student)
@@ -165,29 +178,40 @@ namespace ProjectCenter.Infrastructure.Persistence.Repositories
                     .ThenInclude(g => g.Teacher)
                         .ThenInclude(t => t.User)
                 .AsQueryable();
-            if (!string.IsNullOrWhiteSpace(searchText))
+
+            if (!string.IsNullOrWhiteSpace(searchTerm))
             {
-                var search = searchText.Trim();
+                var term = searchTerm.Trim();
                 query = query.Where(p =>
-                    p.Title.Contains(search) ||
-                    (p.Student.User.Surname + " " + p.Student.User.Name + " " + p.Student.User.Patronymic).Contains(search) ||
-                    (p.Teacher.User.Surname + " " + p.Teacher.User.Name + " " + p.Teacher.User.Patronymic).Contains(search) ||
-                    p.Student.Group.Name.Contains(search)
-                );
+                    p.Title.Contains(term) ||
+                    (p.Student.User.Surname + " " + p.Student.User.Name + " " + p.Student.User.Patronymic).Contains(term) ||
+                    (p.Teacher.User.Surname + " " + p.Teacher.User.Name + " " + p.Teacher.User.Patronymic).Contains(term) ||
+                    p.Student.Group.Name.Contains(term));
             }
+
+            if (year.HasValue)
+                query = query.Where(p => p.Year == year.Value);
+
+            if (groupId.HasValue)
+                query = query.Where(p => p.Student.GroupId == groupId.Value);
             query = sortBy switch
             {
                 ProjectSortBy.CreatedDateAsc => query.OrderBy(p => p.CreatedDate),
                 ProjectSortBy.CreatedDateDesc => query.OrderByDescending(p => p.CreatedDate),
                 ProjectSortBy.DeadlineAsc => query.OrderBy(p => p.DateDeadline),
                 ProjectSortBy.DeadlineDesc => query.OrderByDescending(p => p.DateDeadline),
-                _ => query.OrderByDescending(p => p.CreatedDate) 
+                _ => query.OrderByDescending(p => p.CreatedDate)
             };
 
             return await query.ToListAsync();
         }
 
-        public async Task<List<Project>> GetPublicProjectsWithSearchAsync(string? searchText, ProjectSortBy? sortBy)
+        public async Task<List<Project>> GetPublicProjectsFilteredAsync(
+            string? searchTerm = null,
+            int? year = null,
+            int? groupId = null,
+            
+            ProjectSortBy? sortBy = null)
         {
             var query = _context.Projects
                 .Where(p => p.IsPublic)
@@ -206,16 +230,24 @@ namespace ProjectCenter.Infrastructure.Persistence.Repositories
                     .ThenInclude(g => g.Teacher)
                         .ThenInclude(t => t.User)
                 .AsQueryable();
-            if (!string.IsNullOrWhiteSpace(searchText))
+
+            if (!string.IsNullOrWhiteSpace(searchTerm))
             {
-                var search = searchText.Trim();
+                var term = searchTerm.Trim();
                 query = query.Where(p =>
-                    p.Title.Contains(search) ||
-                    (p.Student.User.Surname + " " + p.Student.User.Name + " " + p.Student.User.Patronymic).Contains(search) ||
-                    (p.Teacher.User.Surname + " " + p.Teacher.User.Name + " " + p.Teacher.User.Patronymic).Contains(search) ||
-                    p.Student.Group.Name.Contains(search)
-                );
+                    p.Title.Contains(term) ||
+                    (p.Student.User.Surname + " " + p.Student.User.Name + " " + p.Student.User.Patronymic).Contains(term) ||
+                    (p.Teacher.User.Surname + " " + p.Teacher.User.Name + " " + p.Teacher.User.Patronymic).Contains(term) ||
+                    p.Student.Group.Name.Contains(term));
             }
+
+            if (year.HasValue)
+                query = query.Where(p => p.Year == year.Value);
+
+            if (groupId.HasValue)
+                query = query.Where(p => p.Student.GroupId == groupId.Value);
+
+
             query = sortBy switch
             {
                 ProjectSortBy.CreatedDateAsc => query.OrderBy(p => p.CreatedDate),

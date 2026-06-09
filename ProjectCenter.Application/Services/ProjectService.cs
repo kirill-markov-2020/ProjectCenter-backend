@@ -1,6 +1,7 @@
 ﻿using AutoMapper;
 using Microsoft.EntityFrameworkCore;
 using ProjectCenter.Application.DTOs;
+using ProjectCenter.Application.DTOs.Directory;
 using ProjectCenter.Application.DTOs.Project;
 using ProjectCenter.Application.Interfaces;
 using ProjectCenter.Core.Entities;
@@ -17,8 +18,9 @@ namespace ProjectCenter.Application.Services
         private readonly IFileService _fileService;
         private readonly INotificationService _notificationService;
         private readonly IDirectoryRepository _directoryRepository;
+        private readonly IGroupRepository _groupRepository;
 
-        public ProjectService(IProjectRepository projectRepository, IUserRepository userRepository, IMapper mapper, IFileService fileService, INotificationService notificationService, IDirectoryRepository directoryRepository)
+        public ProjectService(IProjectRepository projectRepository, IUserRepository userRepository, IMapper mapper, IFileService fileService, INotificationService notificationService, IDirectoryRepository directoryRepository, IGroupRepository groupRepository)
         {
             _projectRepository = projectRepository;
             _userRepository = userRepository;
@@ -26,22 +28,46 @@ namespace ProjectCenter.Application.Services
             _fileService = fileService;
             _notificationService = notificationService;
             _directoryRepository = directoryRepository;
+            _groupRepository = groupRepository;
         }
 
 
-        public async Task<List<ProjectDto>> GetProjectsForUserAsync(int userId, string? searchText = null, ProjectSortBy? sortBy = null)
+        public async Task<List<ProjectDto>> GetProjectsForUserAsync(
+             int userId,
+             string? searchTerm = null,
+             int? year = null,
+             int? groupId = null,
+             ProjectSortBy? sortBy = null)
         {
             var user = await _userRepository.GetFullUserByIdAsync(userId);
             var effectiveSortBy = sortBy ?? ProjectSortBy.CreatedDateDesc;
 
             if (user.IsAdmin || user.Teacher != null)
             {
-                var projects = await _projectRepository.GetAllProjectsWithSearchAsync(searchText, effectiveSortBy);
+                var projects = await _projectRepository.GetProjectsFilteredAsync(
+                    searchTerm, year, groupId, effectiveSortBy);
                 return _mapper.Map<List<ProjectDto>>(projects);
             }
 
-            var publicProjects = await _projectRepository.GetPublicProjectsWithSearchAsync(searchText, effectiveSortBy);
+            var publicProjects = await _projectRepository.GetPublicProjectsFilteredAsync(
+                searchTerm, year, groupId, effectiveSortBy);
             return _mapper.Map<List<ProjectDto>>(publicProjects);
+        }
+        public async Task<List<GroupDto>> GetAvailableGroupsForYearAsync(int year)
+        {
+            var projects = await _projectRepository.GetProjectsByYearAsync(year);
+
+            var groupIds = projects
+                .Where(p => p.Student?.GroupId != null)
+                .Select(p => p.Student.GroupId)
+                .Distinct()
+                .ToList();
+
+            if (!groupIds.Any())
+                return new List<GroupDto>();
+
+            var groups = await _groupRepository.GetByIdsAsync(groupIds);
+            return _mapper.Map<List<GroupDto>>(groups);
         }
         public async Task<ProjectDto> GetProjectByIdAsync(int id)
         {

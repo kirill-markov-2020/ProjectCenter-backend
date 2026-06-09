@@ -3,6 +3,7 @@ using ProjectCenter.Application.DTOs.Project;
 using ProjectCenter.Application.DTOs;
 using ProjectCenter.Core.Entities;
 using ProjectCenter.Core.ValueObjects;
+using ProjectCenter.Application.DTOs.Directory;
 
 namespace ProjectCenter.Application.Mappings
 {
@@ -42,6 +43,7 @@ namespace ProjectCenter.Application.Mappings
                            opt => opt.MapFrom(src => $"{src.User.Surname} {src.User.Name} {src.User.Patronymic}".Trim()))
                 .ForMember(dest => dest.Text, opt => opt.MapFrom(src => src.Text))
                 .ForMember(dest => dest.Date, opt => opt.MapFrom(src => src.Date));
+            CreateMap<Group, GroupDto>();
 
         }
     }

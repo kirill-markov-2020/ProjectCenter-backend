@@ -71,8 +71,9 @@ namespace ProjectCenter.API.Extensions
             services.AddScoped<ITeacherRepository, TeacherRepository>();
             services.AddScoped<IGradeRepository, GradeRepository>();
             services.AddScoped<INotificationRepository, NotificationRepository>();
+            services.AddScoped<IGroupRepository, GroupRepository>();
 
-            
+
 
             return services;
         }
