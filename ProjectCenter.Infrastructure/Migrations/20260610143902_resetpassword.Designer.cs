@@ -12,8 +12,8 @@ using ProjectCenter.Infrastructure.Persistence.Contexts;
 namespace ProjectCenter.Infrastructure.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20260608170805_upda")]
-    partial class upda
+    [Migration("20260610143902_resetpassword")]
+    partial class resetpassword
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -250,6 +250,42 @@ namespace ProjectCenter.Infrastructure.Migrations
                         .HasDatabaseName("IX_Notification_TypeId");
 
                     b.ToTable("Notification", (string)null);
+                });
+
+            modelBuilder.Entity("ProjectCenter.Core.Entities.PasswordResetCode", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("Code")
+                        .IsRequired()
+                        .HasMaxLength(6)
+                        .HasColumnType("nvarchar(6)");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("Email")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<DateTime>("ExpiresAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<bool>("IsUsed")
+                        .HasColumnType("bit");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("Code");
+
+                    b.HasIndex("Email");
+
+                    b.ToTable("PasswordResetCodes", (string)null);
                 });
 
             modelBuilder.Entity("ProjectCenter.Core.Entities.Project", b =>

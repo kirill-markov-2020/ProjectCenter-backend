@@ -249,6 +249,42 @@ namespace ProjectCenter.Infrastructure.Migrations
                     b.ToTable("Notification", (string)null);
                 });
 
+            modelBuilder.Entity("ProjectCenter.Core.Entities.PasswordResetCode", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("Code")
+                        .IsRequired()
+                        .HasMaxLength(6)
+                        .HasColumnType("nvarchar(6)");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("Email")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<DateTime>("ExpiresAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<bool>("IsUsed")
+                        .HasColumnType("bit");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("Code");
+
+                    b.HasIndex("Email");
+
+                    b.ToTable("PasswordResetCodes", (string)null);
+                });
+
             modelBuilder.Entity("ProjectCenter.Core.Entities.Project", b =>
                 {
                     b.Property<int>("Id")

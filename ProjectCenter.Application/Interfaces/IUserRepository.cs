@@ -13,7 +13,7 @@ namespace ProjectCenter.Application.Interfaces
         Task<bool> LoginExistsAsync(string login);
         Task<bool> EmailExistsAsync(string email);
 
-
+        Task<User?> GetUserByEmailAsync(string email);
         Task<List<User>> GetAllAsync();
         Task<User?> GetByIdAsync(int id);
 

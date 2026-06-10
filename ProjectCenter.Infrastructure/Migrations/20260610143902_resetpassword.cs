@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace ProjectCenter.Infrastructure.Migrations
 {
     /// <inheritdoc />
-    public partial class upda : Migration
+    public partial class resetpassword : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -61,6 +61,23 @@ namespace ProjectCenter.Infrastructure.Migrations
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_Group", x => x.Id);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "PasswordResetCodes",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    Email = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: false),
+                    Code = table.Column<string>(type: "nvarchar(6)", maxLength: 6, nullable: false),
+                    CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    ExpiresAt = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    IsUsed = table.Column<bool>(type: "bit", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_PasswordResetCodes", x => x.Id);
                 });
 
             migrationBuilder.CreateTable(
@@ -435,6 +452,16 @@ namespace ProjectCenter.Infrastructure.Migrations
                 column: "TypeId");
 
             migrationBuilder.CreateIndex(
+                name: "IX_PasswordResetCodes_Code",
+                table: "PasswordResetCodes",
+                column: "Code");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_PasswordResetCodes_Email",
+                table: "PasswordResetCodes",
+                column: "Email");
+
+            migrationBuilder.CreateIndex(
                 name: "IX_Project_StatusId",
                 table: "Project",
                 column: "StatusId");
@@ -502,6 +529,9 @@ namespace ProjectCenter.Infrastructure.Migrations
 
             migrationBuilder.DropTable(
                 name: "Notification");
+
+            migrationBuilder.DropTable(
+                name: "PasswordResetCodes");
 
             migrationBuilder.DropTable(
                 name: "Cabinet");

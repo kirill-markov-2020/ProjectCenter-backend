@@ -10,6 +10,7 @@ using ProjectCenter.Core.Exceptions;
 using ProjectCenter.Infrastructure.Persistence.Contexts;
 using ProjectCenter.Infrastructure.Persistence.Repositories;
 using ProjectCenter.Infrastructure.Services;
+using ProjectCenter.Infrastructure.Settings;
 using System.Text;
 
 namespace ProjectCenter.API.Extensions
@@ -72,6 +73,7 @@ namespace ProjectCenter.API.Extensions
             services.AddScoped<IGradeRepository, GradeRepository>();
             services.AddScoped<INotificationRepository, NotificationRepository>();
             services.AddScoped<IGroupRepository, GroupRepository>();
+            services.AddScoped<IPasswordResetRepository, PasswordResetRepository>();
 
 
 
@@ -88,8 +90,9 @@ namespace ProjectCenter.API.Extensions
             services.AddScoped<IGradeService, GradeService>();
             services.AddScoped<IJwtService, JwtService>();
             services.AddScoped<IFileService, FileService>();
+            services.AddScoped<IEmailService, EmailService>();
             services.AddScoped<INotificationService, NotificationService>();
-
+            services.AddScoped<IPasswordResetService, PasswordResetService>();
             return services;
         }
         public static IServiceCollection AddBackgroundServices(this IServiceCollection services)
@@ -140,6 +143,7 @@ namespace ProjectCenter.API.Extensions
             services.AddRepositories();
             services.AddApplicationServices();
             services.AddCustomAutoMapper();
+            services.Configure<SmtpSettings>(configuration.GetSection("SmtpSettings"));
             services.AddCustomCors(configuration);
 
             return services;
