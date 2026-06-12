@@ -65,6 +65,20 @@ namespace ProjectCenter.Api.Controllers
 
             return NoContent();
         }
+        [HttpGet("students")]
+        [Authorize(Roles = "Admin")]
+        public async Task<IActionResult> GetStudents()
+        {
+            var students = await _userService.GetAllStudentsAsync();
+            return Ok(students);
+        }
+        [HttpGet("{id}")]
+        [Authorize(Roles = "Admin")]
+        public async Task<IActionResult> GetUserById(int id)
+        {
+            var user = await _userService.GetUserByIdAsync(id);
+            return Ok(user);
+        }
 
 
 

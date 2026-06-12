@@ -1,4 +1,5 @@
-﻿using ProjectCenter.Core.Entities;
+﻿using ProjectCenter.Application.DTOs.User;
+using ProjectCenter.Core.Entities;
 
 namespace ProjectCenter.Application.Interfaces
 {
@@ -9,7 +10,7 @@ namespace ProjectCenter.Application.Interfaces
         Task AddTeacherAsync(Teacher teacher);
         Task AddStudentAsync(Student student);
 
-      
+        Task<List<User>> GetAllStudentsAsync();
         Task<bool> LoginExistsAsync(string login);
         Task<bool> EmailExistsAsync(string email);
 

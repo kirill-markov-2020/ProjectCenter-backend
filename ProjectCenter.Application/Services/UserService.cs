@@ -455,6 +455,21 @@ namespace ProjectCenter.Application.Services
                 );
             }
 
+
+        }
+        public async Task<List<UserDto>> GetAllStudentsAsync()
+        {
+            var students = await _userRepository.GetAllStudentsAsync();
+            return _mapper.Map<List<UserDto>>(students);
+        }
+        public async Task<UserDto> GetUserByIdAsync(int id)
+        {
+            var user = await _userRepository.GetByIdAsync(id);
+
+            if (user == null)
+                throw new UserNotFoundException(id);
+
+            return _mapper.Map<UserDto>(user);
         }
 
 

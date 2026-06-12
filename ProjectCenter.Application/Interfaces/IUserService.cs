@@ -23,6 +23,8 @@ namespace ProjectCenter.Application.Interfaces
         Task<List<UserDto>> GetActiveUsersAsync();  
         Task<List<UserDto>> GetGraduatedUsersAsync();
 
+        Task<List<UserDto>> GetAllStudentsAsync();
+        Task<UserDto> GetUserByIdAsync(int id);
 
     }
 }

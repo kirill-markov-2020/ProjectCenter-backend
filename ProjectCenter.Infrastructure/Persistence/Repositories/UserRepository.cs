@@ -62,7 +62,10 @@ namespace ProjectCenter.Infrastructure.Persistence.Repositories
         {
             return await _context.Users
                 .Include(u => u.Student)
-                .Include(u => u.Teacher)
+                    .ThenInclude(s => s.Group)
+                .Include(u => u.Student)
+                    .ThenInclude(s => s.Teacher)
+                        .ThenInclude(t => t.User)
                 .FirstOrDefaultAsync(u => u.Id == id);
         }
 
@@ -115,7 +118,17 @@ namespace ProjectCenter.Infrastructure.Persistence.Repositories
                 .FirstOrDefaultAsync(t => t.Id == teacherId);
         }
 
-
+        public async Task<List<User>> GetAllStudentsAsync()
+        {
+            return await _context.Users
+                .Include(u => u.Student)
+                    .ThenInclude(s => s.Group)
+                .Include(u => u.Student)
+                    .ThenInclude(s => s.Teacher)
+                        .ThenInclude(t => t.User)
+                .Where(u => u.Student != null)
+                .ToListAsync();
+        }
 
 
     }
