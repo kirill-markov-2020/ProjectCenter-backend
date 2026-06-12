@@ -195,7 +195,6 @@ namespace ProjectCenter.Application.Services
             if (project == null)
                 throw new ProjectNotFoundException(projectId);
 
-          
             if (!string.IsNullOrWhiteSpace(dto.Title))
                 project.Title = dto.Title;
 
@@ -204,8 +203,6 @@ namespace ProjectCenter.Application.Services
 
             if (dto.StatusId.HasValue)
                 project.StatusId = dto.StatusId.Value;
-            if (dto.Year.HasValue)
-                project.Year = dto.Year.Value;
 
             if (dto.TypeId.HasValue)
                 project.TypeId = dto.TypeId.Value;
@@ -213,19 +210,14 @@ namespace ProjectCenter.Application.Services
             if (dto.SubjectId.HasValue)
                 project.SubjectId = dto.SubjectId.Value;
 
-            if (!string.IsNullOrWhiteSpace(dto.FileProject))
-                project.FileProject = dto.FileProject;
-
-            if (!string.IsNullOrWhiteSpace(dto.FileDocumentation))
-                project.FileDocumentation = dto.FileDocumentation;
-
-            if (dto.IsPublic.HasValue)
-                project.IsPublic = dto.IsPublic.Value;
             if (dto.IsPublic.HasValue)
                 project.IsPublic = dto.IsPublic.Value;
 
             if (dto.DateDeadline.HasValue)
+            {
                 project.DateDeadline = dto.DateDeadline.Value;
+                project.Year = dto.DateDeadline.Value.Year; 
+            }
 
             await _projectRepository.UpdateProjectAsync(project);
 
