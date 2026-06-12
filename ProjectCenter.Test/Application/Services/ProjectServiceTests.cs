@@ -2,6 +2,7 @@
 using Xunit;
 using AutoMapper;
 using ProjectCenter.Application.Services;
+using ProjectCenter.Application.DTOs.Project;
 using ProjectCenter.Application.Interfaces;
 using ProjectCenter.Core.Entities;
 using ProjectCenter.Core.Exceptions;
@@ -17,6 +18,9 @@ namespace ProjectCenter.Test.Application.Services
             var mockUserRepository = new Mock<IUserRepository>();
             var mockMapper = new Mock<IMapper>();
             var mockFileService = new Mock<IFileService>();
+            var mockNotificationService = new Mock<INotificationService>();
+            var mockDirectoryRepository = new Mock<IDirectoryRepository>();
+            var mockGroupRepository = new Mock<IGroupRepository>();
 
             var testStudent = new Student
             {
@@ -36,7 +40,10 @@ namespace ProjectCenter.Test.Application.Services
                 mockProjectRepository.Object,
                 mockUserRepository.Object,
                 mockMapper.Object,
-                mockFileService.Object);
+                mockFileService.Object,
+                mockNotificationService.Object,
+                mockDirectoryRepository.Object,
+                mockGroupRepository.Object);
 
             var newProjectRequest = new CreateProjectRequestDto
             {
