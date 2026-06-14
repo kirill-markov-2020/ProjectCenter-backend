@@ -93,6 +93,7 @@ namespace ProjectCenter.API.Extensions
             services.AddScoped<IEmailService, EmailService>();
             services.AddScoped<INotificationService, NotificationService>();
             services.AddScoped<IPasswordResetService, PasswordResetService>();
+            services.AddScoped<IAdminService, AdminService>();
             return services;
         }
         public static IServiceCollection AddBackgroundServices(this IServiceCollection services)
