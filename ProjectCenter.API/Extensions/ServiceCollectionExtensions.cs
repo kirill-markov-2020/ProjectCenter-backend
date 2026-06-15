@@ -74,8 +74,7 @@ namespace ProjectCenter.API.Extensions
             services.AddScoped<INotificationRepository, NotificationRepository>();
             services.AddScoped<IGroupRepository, GroupRepository>();
             services.AddScoped<IPasswordResetRepository, PasswordResetRepository>();
-
-
+            services.AddScoped<IDataStorageCategoryRepository, DataStorageCategoryRepository>();
 
             return services;
         }
@@ -94,6 +93,7 @@ namespace ProjectCenter.API.Extensions
             services.AddScoped<INotificationService, NotificationService>();
             services.AddScoped<IPasswordResetService, PasswordResetService>();
             services.AddScoped<IAdminService, AdminService>();
+            services.AddScoped<IPrivacyService, PrivacyService>();
             return services;
         }
         public static IServiceCollection AddBackgroundServices(this IServiceCollection services)

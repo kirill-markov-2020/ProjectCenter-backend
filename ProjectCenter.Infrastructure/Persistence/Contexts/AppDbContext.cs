@@ -29,6 +29,7 @@ namespace ProjectCenter.Infrastructure.Persistence.Contexts
         public DbSet<Subject> Subjects { get; set; }
         public DbSet<TypeProject> TypeProjects { get; set; }
         public DbSet<StatusProject> StatusProjects { get; set; }
+        public DbSet<DataStorageCategory> DataStorageCategories { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
