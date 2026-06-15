@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace ProjectCenter.Infrastructure.Migrations
 {
     /// <inheritdoc />
-    public partial class resetpassword : Migration
+    public partial class Update : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -35,6 +35,21 @@ namespace ProjectCenter.Infrastructure.Migrations
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_CollegeBuilding", x => x.Id);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "DataStorageCategory",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    Name = table.Column<string>(type: "nvarchar(200)", maxLength: 200, nullable: false),
+                    Purpose = table.Column<string>(type: "nvarchar(500)", maxLength: 500, nullable: true),
+                    RetentionPeriod = table.Column<string>(type: "nvarchar(200)", maxLength: 200, nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_DataStorageCategory", x => x.Id);
                 });
 
             migrationBuilder.CreateTable(
@@ -523,6 +538,9 @@ namespace ProjectCenter.Infrastructure.Migrations
 
             migrationBuilder.DropTable(
                 name: "ConsultationSchedule");
+
+            migrationBuilder.DropTable(
+                name: "DataStorageCategory");
 
             migrationBuilder.DropTable(
                 name: "Grade");

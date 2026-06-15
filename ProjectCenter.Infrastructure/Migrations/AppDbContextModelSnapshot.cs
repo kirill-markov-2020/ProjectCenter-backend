@@ -128,6 +128,32 @@ namespace ProjectCenter.Infrastructure.Migrations
                     b.ToTable("ConsultationSchedule", (string)null);
                 });
 
+            modelBuilder.Entity("ProjectCenter.Core.Entities.DataStorageCategory", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
+                    b.Property<string>("Purpose")
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
+
+                    b.Property<string>("RetentionPeriod")
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("DataStorageCategory", (string)null);
+                });
+
             modelBuilder.Entity("ProjectCenter.Core.Entities.DayOfWeekForConsultation", b =>
                 {
                     b.Property<int>("Id")

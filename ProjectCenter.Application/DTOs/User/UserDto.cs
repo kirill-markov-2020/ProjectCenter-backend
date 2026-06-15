@@ -13,6 +13,7 @@
         public string? Photo { get; set; }
         public string? GroupDisplayName { get; set; }
         public string? CuratorName { get; set; }
-
+        public DateTime? DateEnrolled { get; set; }
+        public DateTime? DateGraduated { get; set; }
     }
 }
