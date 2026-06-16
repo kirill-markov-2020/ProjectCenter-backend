@@ -8,5 +8,6 @@ namespace ProjectCenter.Application.Interfaces
         Task<List<TypeProjectDto>> GetTypesAsync();
         Task<List<SubjectDto>> GetSubjectsAsync();
         Task<List<GroupDto>> GetGroupsAsync();
+        Task<GroupDto> CreateGroupAsync(CreateGroupDto dto);
     }
 }

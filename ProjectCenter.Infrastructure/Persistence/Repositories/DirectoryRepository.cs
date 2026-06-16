@@ -25,5 +25,13 @@ namespace ProjectCenter.Infrastructure.Persistence.Repositories
 
         public async Task<List<Group>> GetGroupsAsync()
             => await _context.Groups.ToListAsync();
+        public async Task<TypeProject?> GetTypeByIdAsync(int id)
+        {
+            return await _context.TypeProjects.FirstOrDefaultAsync(t => t.Id == id);
+        }
+        public async Task<Subject?> GetSubjectByIdAsync(int id)
+        {
+            return await _context.Subjects.FirstOrDefaultAsync(t => t.Id == id);
+        }
     }
 }

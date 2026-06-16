@@ -1,9 +1,7 @@
 ﻿using AutoMapper;
 using Azure.Core;
 using BCrypt.Net;
-using ProjectCenter.Application.DTOs;
-using ProjectCenter.Application.DTOs.CreateUser;
-using ProjectCenter.Application.DTOs.UpdateUser;
+using ProjectCenter.Application.DTOs.User;
 using ProjectCenter.Application.Interfaces;
 using ProjectCenter.Core.Entities;
 using ProjectCenter.Core.Exceptions;
@@ -20,12 +18,18 @@ namespace ProjectCenter.Application.Services
 
         private readonly IMapper _mapper;
         private readonly IFileService _fileService;
+        private readonly INotificationService _notificationService;
+        private readonly IProjectRepository _projectRepository;
+        private readonly IProjectService _projectService;
 
-        public UserService(IUserRepository userRepository, IMapper mapper, IFileService fileService)
+        public UserService(IUserRepository userRepository, IMapper mapper, IFileService fileService, INotificationService notificationService, IProjectRepository projectRepository, IProjectService projectService)
         {
             _userRepository = userRepository;
             _mapper = mapper;
             _fileService = fileService;
+            _notificationService = notificationService;
+            _projectRepository = projectRepository;
+            _projectService = projectService;
         }
 
 
@@ -64,6 +68,11 @@ namespace ProjectCenter.Application.Services
             {
                 if (!dto.GroupId.HasValue || !dto.TeacherId.HasValue)
                     throw new InvalidStudentDataException("Для роли 'Student' необходимо указать GroupId и TeacherId.");
+                if (!dto.DateEnrolled.HasValue)
+                    throw new InvalidStudentDataException("Для студента необходимо указать дату зачисления.");
+
+                if (dto.DateEnrolled.Value > DateTime.Now)
+                    throw new InvalidStudentDataException("Дата зачисления не может быть в будущем.");
             }
             else
             {
@@ -88,13 +97,22 @@ namespace ProjectCenter.Application.Services
 
             await _userRepository.AddUserAsync(user);
 
+            bool isTeacher = false;
+            string teacherFullName = null;
+            string teacherEmail = null;
+            bool isStudent = false;
+            string studentFullName = null;
+            string studentEmail = null;
+
             if (roleNormalized.Equals("Teacher", StringComparison.OrdinalIgnoreCase))
             {
                 var teacher = new Teacher
                 {
                     UserId = user.Id
                 };
-
+                isTeacher = true;
+                teacherFullName = $"{user.Surname} {user.Name} {user.Patronymic}".Trim();
+                teacherEmail = user.Email;
                 await _userRepository.AddTeacherAsync(teacher);
             }
             else if (roleNormalized.Equals("Student", StringComparison.OrdinalIgnoreCase))
@@ -103,12 +121,55 @@ namespace ProjectCenter.Application.Services
                 {
                     UserId = user.Id,
                     GroupId = dto.GroupId!.Value,
-                    TeacherId = dto.TeacherId!.Value
+                    TeacherId = dto.TeacherId!.Value,
+                    DateEnrolled = dto.DateEnrolled!.Value,
+                    DateGraduated = null
                 };
-
+                isStudent = true;
+                studentFullName = $"{user.Surname} {user.Name} {user.Patronymic}".Trim();
+                studentEmail = user.Email;
                 await _userRepository.AddStudentAsync(student);
             }
+            var userFullName = $"{user.Surname} {user.Name} {user.Patronymic}".Trim();
+            await _notificationService.SendUserWelcomeNotificationAsync(
+                user.Id,
+                userFullName,
+                roleNormalized
+            );
+            if (isTeacher)
+            {
+                var allUsers = await _userRepository.GetAllAsync();
+                var adminUserIds = allUsers
+                    .Where(u => u.IsAdmin)
+                    .Select(u => u.Id)
+                    .ToList();
 
+                if (adminUserIds.Any())
+                {
+                    await _notificationService.SendNewTeacherNotificationForAdminsAsync(
+                        adminUserIds,
+                        teacherFullName,
+                        teacherEmail
+                    );
+                }
+            }
+            if (isStudent)
+            {
+                var allUsers = await _userRepository.GetAllAsync();
+                var adminUserIds = allUsers
+                    .Where(u => u.IsAdmin)
+                    .Select(u => u.Id)
+                    .ToList();
+
+                if (adminUserIds.Any())
+                {
+                    await _notificationService.SendNewStudentNotificationForAdminsAsync(
+                        adminUserIds,
+                        studentFullName,
+                        studentEmail
+                    );
+                }
+            }
             return new CreateUserResponseDto
             {
                 UserId = user.Id,
@@ -121,29 +182,91 @@ namespace ProjectCenter.Application.Services
             return _mapper.Map<List<UserDto>>(users);
         }
 
-        public async Task DeleteUserAsync(int id)
+        public async Task DeleteUserAsync(int id, DeleteUserRequestDto? dto = null)
         {
-            var user = await _userRepository.GetByIdAsync(id);
+            var user = await _userRepository.GetFullUserByIdAsync(id);
             if (user == null)
                 throw new ArgumentException("Пользователь не найден.");
 
-          
+            if (user.Student != null)
+            {
+                DateTime graduationDate = dto?.GraduationDate ?? DateTime.Now;
+
+                if (graduationDate < user.Student.DateEnrolled)
+                    throw new InvalidStudentDataException("Дата выпуска/отчисления не может быть раньше даты зачисления.");
+
+                user.Student.DateGraduated = graduationDate;
+
+
+                await _userRepository.UpdateUserAsync(user);
+
+                var curator = await _userRepository.GetTeacherByIdAsync(user.Student.TeacherId);
+                if (curator != null)
+                {
+                    var studentFullName = $"{user.Surname} {user.Name} {user.Patronymic}".Trim();
+                    string groupName;
+                    if (user.Student?.Group != null)
+                    {
+                        groupName = user.Student.Group.Name;
+                    }
+                    else
+                    {
+                        groupName = "не указана";
+                    }
+                    await _notificationService.SendStudentDeletedNotificationForCuratorAsync(
+                        curator.UserId,
+                        studentFullName,
+                        groupName
+                    );
+                }
+
+                return;
+            }
+
             if (user.Teacher != null)
             {
                 var students = await _userRepository.GetAllAsync();
                 bool hasStudents = students.Any(s => s.Student != null && s.Student.TeacherId == user.Teacher.Id);
 
                 if (hasStudents)
-                    throw new TeacherHasStudentsException();
+                    throw new TeacherHasStudentsException("Невозможно удалить преподавателя, у которого есть закрепленные студенты.");
 
                 await _userRepository.DeleteTeacherAsync(user.Teacher);
-            }
-            else if (user.Student != null)
-            {
-                await _userRepository.DeleteStudentAsync(user.Student);
+                await _userRepository.DeleteUserAsync(user);
+                return;
             }
 
-            await _userRepository.DeleteUserAsync(user);
+            if (user.IsAdmin)
+            {
+                await _userRepository.DeleteUserAsync(user);
+                return;
+            }
+        }
+
+        public async Task<List<UserDto>> GetActiveUsersAsync()
+        {
+            var users = await _userRepository.GetAllAsync();
+
+            var activeUsers = users.Where(u =>
+                u.Student == null ||
+                !u.Student.DateGraduated.HasValue ||
+                u.Student.DateGraduated.Value > DateTime.Now
+            ).ToList();
+
+            return _mapper.Map<List<UserDto>>(activeUsers);
+        }
+
+        public async Task<List<UserDto>> GetGraduatedUsersAsync()
+        {
+            var users = await _userRepository.GetAllAsync();
+
+            var graduatedUsers = users.Where(u =>
+                u.Student != null &&
+                u.Student.DateGraduated.HasValue &&
+                u.Student.DateGraduated.Value <= DateTime.Now
+            ).ToList();
+
+            return _mapper.Map<List<UserDto>>(graduatedUsers);
         }
         public async Task<UserDto> GetMyProfileAsync(int userId)
         {
@@ -208,6 +331,39 @@ namespace ProjectCenter.Application.Services
             if (user == null)
                 throw new ArgumentException("Пользователь не найден.");
 
+            int? oldCuratorUserId = null;
+            int? newCuratorUserId = null;
+            string oldCuratorFullName = null;
+            string newCuratorFullName = null;
+            string studentFullName = null;
+            bool curatorWillChange = false;
+            int oldTeacherId = 0;
+            int newTeacherId = 0;
+
+            if (user.Student != null && dto.CuratorId.HasValue && user.Student.TeacherId != dto.CuratorId.Value)
+            {
+                curatorWillChange = true;
+
+                oldTeacherId = user.Student.TeacherId;
+                newTeacherId = dto.CuratorId.Value;
+
+                var oldTeacher = await _userRepository.GetTeacherByIdAsync(oldTeacherId);
+                if (oldTeacher != null)
+                {
+                    oldCuratorUserId = oldTeacher.UserId;
+                    oldCuratorFullName = $"{oldTeacher.User.Surname} {oldTeacher.User.Name} {oldTeacher.User.Patronymic}".Trim();
+                }
+
+                var newTeacher = await _userRepository.GetTeacherByIdAsync(newTeacherId);
+                if (newTeacher != null)
+                {
+                    newCuratorUserId = newTeacher.UserId;
+                    newCuratorFullName = $"{newTeacher.User.Surname} {newTeacher.User.Name} {newTeacher.User.Patronymic}".Trim();
+                }
+
+                studentFullName = $"{user.Surname} {user.Name} {user.Patronymic}".Trim();
+            }
+
             if (!string.IsNullOrWhiteSpace(dto.Email) && user.Email != dto.Email)
             {
                 var emailErrors = EmailValidator.Validate(dto.Email);
@@ -230,16 +386,19 @@ namespace ProjectCenter.Application.Services
 
             if (!string.IsNullOrWhiteSpace(dto.Surname))
                 user.Surname = dto.Surname;
+
             if (!string.IsNullOrWhiteSpace(dto.Name))
                 user.Name = dto.Name;
+
             if (!string.IsNullOrWhiteSpace(dto.Patronymic))
                 user.Patronymic = dto.Patronymic;
+
             if (!string.IsNullOrWhiteSpace(dto.Login))
                 user.Login = dto.Login;
+
             if (!string.IsNullOrWhiteSpace(dto.PhotoPath))
                 user.Photo = dto.PhotoPath;
 
-           
             if (user.Student != null)
             {
                 if (dto.GroupId.HasValue)
@@ -247,13 +406,70 @@ namespace ProjectCenter.Application.Services
 
                 if (dto.CuratorId.HasValue)
                     user.Student.TeacherId = dto.CuratorId.Value;
+                if (dto.DateEnrolled.HasValue)
+                    user.Student.DateEnrolled = dto.DateEnrolled.Value;
+                if (user.Student.DateEnrolled > DateTime.Now)
+                    throw new InvalidStudentDataException("Дата зачисления не может быть в будущем.");
 
-            
+                if (user.Student.DateGraduated.HasValue && user.Student.DateGraduated.Value <= user.Student.DateEnrolled)
+                    throw new InvalidStudentDataException("Дата выпуска должна быть позже даты зачисления.");
+                if (dto.DateGraduated.HasValue)
+                    user.Student.DateGraduated = dto.DateGraduated.Value;
+
                 if (user.Student.GroupId == 0 || user.Student.TeacherId == 0)
                     throw new InvalidStudentDataException("Для студента должны быть указаны GroupId и TeacherId.");
             }
 
             await _userRepository.UpdateUserAsync(user);
+
+            if (curatorWillChange && newTeacherId > 0)
+            {
+                var studentProjects = await _projectRepository.GetProjectsByStudentIdAsync(user.Student.Id);
+
+                foreach (var project in studentProjects)
+                {
+                    project.TeacherId = newTeacherId;
+                    await _projectRepository.UpdateProjectAsync(project);
+                }
+            }
+            if (oldCuratorUserId.HasValue && oldCuratorUserId.Value > 0 && studentFullName != null)
+            {
+                await _notificationService.SendStudentCuratorChangedForOldCuratorNotificationAsync(
+                    oldCuratorUserId.Value,
+                    studentFullName
+                );
+            }
+            if (newCuratorUserId.HasValue && newCuratorUserId.Value > 0 && studentFullName != null)
+            {
+                await _notificationService.SendStudentCuratorChangedForNewCuratorNotificationAsync(
+                    newCuratorUserId.Value,
+                    studentFullName
+                );
+            }
+            if (curatorWillChange && oldCuratorFullName != null && newCuratorFullName != null)
+            {
+                await _notificationService.SendStudentCuratorChangedForStudentNotificationAsync(
+                    user.Id,  
+                    oldCuratorFullName,
+                    newCuratorFullName
+                );
+            }
+
+
+        }
+        public async Task<List<UserDto>> GetAllStudentsAsync()
+        {
+            var students = await _userRepository.GetAllStudentsAsync();
+            return _mapper.Map<List<UserDto>>(students);
+        }
+        public async Task<UserDto> GetUserByIdAsync(int id)
+        {
+            var user = await _userRepository.GetByIdAsync(id);
+
+            if (user == null)
+                throw new UserNotFoundException(id);
+
+            return _mapper.Map<UserDto>(user);
         }
 
 

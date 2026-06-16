@@ -1,0 +1,30 @@
+﻿using ProjectCenter.Application.DTOs;
+namespace ProjectCenter.Application.DTOs.Project
+{
+    public class ProjectDto
+    {
+        public int Id { get; set; }
+        public string Title { get; set; }
+        public string StudentName { get; set; }
+        public string StudentGroup { get; set; }
+        public string TeacherName { get; set; }
+        public string StatusName { get; set; }
+        public string TypeName { get; set; }
+        public string SubjectName { get; set; }
+        public int Year { get; set; }
+        public string? FileProject { get; set; }
+        public string? FileDocumentation { get; set; }
+
+        public bool IsPublic { get; set; }
+        public DateTime DateDeadline { get; set; }
+        public DateTime CreatedDate { get; set; }
+
+        public List<CommentDto> Comments { get; set; } = new();
+
+
+        public int? GradeValue { get; set; }
+        public string? GradeComment { get; set; }
+        public DateTime? GradeDate { get; set; }
+        public string? GradedBy { get; set; }
+    }
+}

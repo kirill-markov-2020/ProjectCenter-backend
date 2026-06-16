@@ -20,5 +20,17 @@ namespace ProjectCenter.Infrastructure.Persistence.Repositories
                 .Include(t => t.User) 
                 .ToListAsync();
         }
+        public async Task<List<Student>> GetStudentsByTeacherIdAsync(int teacherId)
+        {
+            return await _context.Students
+                .Where(s => s.TeacherId == teacherId)
+                .Include(s => s.User)
+                .Include(s => s.Group)
+                .Include(s => s.Projects) 
+                    .ThenInclude(p => p.Status)
+                .Include(s => s.Projects)
+                    .ThenInclude(p => p.Grade)
+                .ToListAsync();
+        }
     }
 }

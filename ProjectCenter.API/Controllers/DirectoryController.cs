@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using ProjectCenter.Application.DTOs.Directory;
 using ProjectCenter.Application.Interfaces;
 
 namespace ProjectCenter.Api.Controllers
@@ -42,6 +43,13 @@ namespace ProjectCenter.Api.Controllers
         {
             var data = await _directoryService.GetGroupsAsync();
             return Ok(data);
+        }
+        [HttpPost("groups")]
+        [Authorize(Roles = "Admin")]  
+        public async Task<IActionResult> CreateGroup([FromBody] CreateGroupDto dto)
+        {
+            var group = await _directoryService.CreateGroupAsync(dto);
+            return CreatedAtAction(nameof(GetGroups), new { id = group.Id }, group);
         }
     }
 }

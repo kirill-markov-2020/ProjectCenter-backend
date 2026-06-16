@@ -1,7 +1,9 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using ProjectCenter.Application.DTOs.UpdateProject;
+using ProjectCenter.Application.DTOs.Project;
+using ProjectCenter.Application.DTOs;
 using ProjectCenter.Application.Interfaces;
+using ProjectCenter.Core.Enums;
 using System.Security.Claims;
 
 namespace ProjectCenter.Api.Controllers
@@ -18,19 +20,30 @@ namespace ProjectCenter.Api.Controllers
             _projectService = projectService;
         }
 
+
         [HttpGet]
-        public async Task<IActionResult> GetProjects()
+        public async Task<IActionResult> GetProjects(
+            [FromQuery] string? searchText,
+            [FromQuery] int? year,
+            [FromQuery] int? groupId,
+            [FromQuery] ProjectSortBy? sortBy)
         {
             if (!HttpContext.Items.ContainsKey("UserId"))
                 return Unauthorized();
 
             int userId = (int)HttpContext.Items["UserId"];
-            string role = HttpContext.Items["UserRole"]?.ToString() ?? "User";
 
-            bool isAdmin = role == "Admin";
+            var projects = await _projectService.GetProjectsForUserAsync(
+                userId, searchText, year, groupId, sortBy);
 
-            var projects = await _projectService.GetProjectsForUserAsync(userId, isAdmin);
             return Ok(projects);
+        }
+
+        [HttpGet("groups/by-year")]
+        public async Task<IActionResult> GetGroupsByYear([FromQuery] int year)
+        {
+            var groups = await _projectService.GetAvailableGroupsForYearAsync(year);
+            return Ok(groups);
         }
         [HttpGet("{id}")]
         public async Task<IActionResult> GetProjectById(int id)
@@ -50,7 +63,25 @@ namespace ProjectCenter.Api.Controllers
             var project = await _projectService.CreateProjectAsync(dto, userId);
             return CreatedAtAction(nameof(GetProjectById), new { id = project.Id }, project);
         }
-        
+        [HttpPost("admin")]
+        [Authorize(Roles = "Admin")]
+        public async Task<IActionResult> CreateProjectByAdmin([FromBody] AdminCreateProjectRequestDto dto)
+        {
+            if (dto.StudentUserId <= 0)
+                return BadRequest(new { error = "Необходимо указать StudentUserId" });
+
+            if (dto.CreatedDate == default)
+                return BadRequest(new { error = "Необходимо указать дату создания проекта" });
+
+            if (dto.DateDeadline == default)
+                return BadRequest(new { error = "Необходимо указать дату дедлайна" });
+
+            if (dto.DateDeadline <= dto.CreatedDate)
+                return BadRequest(new { error = "Дата дедлайна должна быть позже даты создания" });
+
+            var project = await _projectService.CreateProjectByAdminAsync(dto);
+            return CreatedAtAction(nameof(GetProjectById), new { id = project.Id }, project);
+        }
 
         [HttpPut("{id}")]
         [Authorize(Roles = "Admin")]
@@ -97,6 +128,20 @@ namespace ProjectCenter.Api.Controllers
 
             return Ok(project);
         }
+        [HttpPost("{id}/comments")]
+        [Authorize]
+        public async Task<IActionResult> AddComment(int id, [FromBody] CreateCommentRequestDto dto)
+        {
+            if (!HttpContext.Items.ContainsKey("UserId"))
+                return Unauthorized();
+
+            int userId = (int)HttpContext.Items["UserId"];
+
+            await _projectService.AddCommentAsync(id, userId, dto.Text);
+
+            return Ok(new { message = "Комментарий добавлен" });
+        }
+
 
 
     }

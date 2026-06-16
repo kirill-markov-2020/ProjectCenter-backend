@@ -14,7 +14,11 @@ namespace ProjectCenter.Infrastructure.Persistence.Configurations
                    .WithMany(g => g.Students)
                    .HasForeignKey(s => s.GroupId)
                    .OnDelete(DeleteBehavior.Restrict);
+            builder.Property(s => s.DateEnrolled)
+                    .IsRequired();
 
+            builder.Property(s => s.DateGraduated)
+                    .IsRequired(false);
             builder.HasOne(s => s.Teacher)
                    .WithMany(t => t.Students)
                    .HasForeignKey(s => s.TeacherId)

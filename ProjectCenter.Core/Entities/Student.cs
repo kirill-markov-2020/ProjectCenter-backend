@@ -10,6 +10,8 @@ public class Student
     public int GroupId { get; set; }
     public int TeacherId { get; set; }
 
+    public DateTime DateEnrolled { get; set; }
+    public DateTime? DateGraduated { get; set; }
 
     public virtual User User { get; set; }
     public virtual Group Group { get; set; }

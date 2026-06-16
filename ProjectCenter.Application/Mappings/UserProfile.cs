@@ -1,5 +1,5 @@
 ﻿using AutoMapper;
-using ProjectCenter.Application.DTOs;
+using ProjectCenter.Application.DTOs.User;
 using ProjectCenter.Core.Entities;
 
 public class UserProfile : Profile
@@ -14,13 +14,18 @@ public class UserProfile : Profile
                     src.Student != null ? "Student" : "User"))
             .ForMember(dest => dest.Photo,
                 opt => opt.MapFrom(src => src.Photo))
-            .ForMember(dest => dest.GroupName,
-                opt => opt.MapFrom(src =>
-                    src.Student != null ? src.Student.Group.Name : null))
+            .ForMember(dest => dest.GroupDisplayName, opt => opt.MapFrom(src =>
+                src.Student != null && src.Student.Group != null
+                    ? src.Student.Group.Name
+                    : null))
             .ForMember(dest => dest.CuratorName,
                 opt => opt.MapFrom(src =>
                     src.Student != null && src.Student.Teacher != null
                         ? $"{src.Student.Teacher.User.Surname} {src.Student.Teacher.User.Name} {src.Student.Teacher.User.Patronymic}"
-                        : null));
+                        : null))
+            .ForMember(dest => dest.DateEnrolled, opt => opt.MapFrom(src =>
+                src.Student != null ? src.Student.DateEnrolled : (DateTime?)null))
+            .ForMember(dest => dest.DateGraduated, opt => opt.MapFrom(src =>
+                src.Student != null ? src.Student.DateGraduated : null));
     }
 }

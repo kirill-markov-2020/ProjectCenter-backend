@@ -1,61 +1,25 @@
-﻿using AutoMapper;
-using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.EntityFrameworkCore;
 using ProjectCenter.API.Extensions;
 using ProjectCenter.API.Middleware;
-using ProjectCenter.Application.Interfaces;
-using ProjectCenter.Application.Mappings;
-using ProjectCenter.Application.Services;
-using ProjectCenter.Core.Entities;
 using ProjectCenter.Infrastructure.Persistence.Contexts;
-using ProjectCenter.Infrastructure.Persistence.Repositories;
-using ProjectCenter.Infrastructure.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
-builder.Services.AddDbContext<AppDbContext>(options =>
-    options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
-
-builder.Services.AddJwtAuthentication(builder.Configuration);
-
-builder.Services.AddScoped<IJwtService, JwtService>();
-builder.Services.AddScoped<IAuthRepository, AuthRepository>();
-builder.Services.AddScoped<IAuthService, AuthService>();
-builder.Services.AddScoped<IProjectRepository, ProjectRepository>();
-builder.Services.AddScoped<IProjectService, ProjectService>();
-builder.Services.AddScoped<IUserRepository, UserRepository>();
-builder.Services.AddScoped<IUserService, UserService>();
-builder.Services.AddScoped<IFileService, FileService>();
-builder.Services.AddScoped<IDirectoryRepository, DirectoryRepository>();
-builder.Services.AddScoped<IDirectoryService, DirectoryService>();
-builder.Services.AddScoped<ITeacherRepository, TeacherRepository>();
-builder.Services.AddScoped<ITeacherService, TeacherService>();
-
-
-
-
-builder.Services.AddAutoMapper(cfg =>
-{
-    cfg.AddProfile<MappingProfile>();
-    cfg.AddProfile<UserProfile>();
-});
-
-builder.Services.AddCors(options =>
-{
-    options.AddDefaultPolicy(policy =>
-    {
-        policy.WithOrigins("http://localhost:5173")
-              .AllowAnyHeader()
-              .AllowAnyMethod()
-              .AllowCredentials();
-    });
-});
+builder.Services.AddAllServices(builder.Configuration);
 
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerWithBearer();
-
+builder.Services.AddBackgroundServices();
 var app = builder.Build();
-app.UseMiddleware<ProjectCenter.API.Middleware.ExceptionHandlingMiddleware>();
+
+using (var scope = app.Services.CreateScope())
+{
+    var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+    db.Database.Migrate();
+}
+
+app.UseMiddleware<ExceptionHandlingMiddleware>();
 
 if (app.Environment.IsDevelopment())
 {
@@ -63,21 +27,27 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI();
 }
 
+app.UseCors();
 app.UseAuthentication();
 app.UseAuthorization();
-app.UseCors();
+
 app.UseStaticFiles(new StaticFileOptions
 {
     OnPrepareResponse = ctx =>
     {
-        ctx.Context.Response.Headers.Append("Access-Control-Allow-Origin", "http://localhost:5173");
+        var allowedOrigins = builder.Configuration.GetSection("Cors:AllowedOrigins").Get<string[]>();
+        var origin = ctx.Context.Request.Headers["Origin"].ToString();
+
+        if (allowedOrigins != null && allowedOrigins.Contains(origin))
+        {
+            ctx.Context.Response.Headers.Append("Access-Control-Allow-Origin", origin);
+        }
         ctx.Context.Response.Headers.Append("Access-Control-Allow-Methods", "GET");
         ctx.Context.Response.Headers.Append("Access-Control-Allow-Headers", "Content-Type");
     }
 });
 
-app.UseMiddleware<ProjectCenter.API.Middleware.UserContextMiddleware>();
-
+app.UseMiddleware<UserContextMiddleware>();
 app.MapControllers();
 
 app.Run();

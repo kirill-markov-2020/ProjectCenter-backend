@@ -1,6 +1,4 @@
-﻿using ProjectCenter.Application.DTOs;
-using ProjectCenter.Application.DTOs.CreateUser;
-using ProjectCenter.Application.DTOs.UpdateUser;
+﻿using ProjectCenter.Application.DTOs.User;
 
 namespace ProjectCenter.Application.Interfaces
 {
@@ -12,7 +10,7 @@ namespace ProjectCenter.Application.Interfaces
         Task<List<UserDto>> GetAllUsersAsync();
 
        
-        Task DeleteUserAsync(int id);
+        Task DeleteUserAsync(int id, DeleteUserRequestDto? dto = null);
 
    
         Task<UserDto> GetMyProfileAsync(int userId);
@@ -21,9 +19,12 @@ namespace ProjectCenter.Application.Interfaces
         Task UpdateMyProfileAsync(int userId, UpdateProfileRequestDto dto);
         
         Task UpdateUserByAdminAsync(int userId, UpdateUserRequestDto dto);
-          
-        
 
+        Task<List<UserDto>> GetActiveUsersAsync();  
+        Task<List<UserDto>> GetGraduatedUsersAsync();
+
+        Task<List<UserDto>> GetAllStudentsAsync();
+        Task<UserDto> GetUserByIdAsync(int id);
 
     }
 }

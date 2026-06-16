@@ -1,8 +1,5 @@
-﻿using Microsoft.AspNetCore.Http;
+﻿using ProjectCenter.API.Responses;
 using ProjectCenter.Core.Exceptions;
-using System;
-using System.Net;
-using System.Threading.Tasks;
 
 namespace ProjectCenter.API.Middleware
 {
@@ -31,83 +28,37 @@ namespace ProjectCenter.API.Middleware
         {
             context.Response.ContentType = "application/json";
 
-            switch (exception)
+            var response = exception switch
             {
-                case InvalidRoleException ex:
-                    context.Response.StatusCode = (int)HttpStatusCode.BadRequest;
-                    await context.Response.WriteAsJsonAsync(new { error = ex.Message, statusCode = 400 });
-                    break;
+                InvalidRoleException ex => new ErrorResponse(ex.Message, 400, type: "InvalidRole"),
+                InvalidPhoneNumberException ex => new ErrorResponse(ex.Message, 400, type: "InvalidPhoneNumber"),
+                InvalidEmailException ex => new ErrorResponse(ex.Message, 400, type: "InvalidEmail"),
+                InvalidPasswordException ex => new ErrorResponse(ex.Message, 400, type: "InvalidPassword"),
+                InvalidStudentDataException ex => new ErrorResponse(ex.Message, 400, type: "InvalidStudentData"),
+                InvalidOperationException ex => new ErrorResponse(ex.Message, 400, type: "InvalidOperation"),
+                ArgumentException ex => new ErrorResponse(ex.Message, 400, type: "Argument"),
+                FileValidationException ex => new ErrorResponse(ex.Message, 400, type: "FileValidation"),
 
-                case InvalidPhoneNumberException ex:
-                    context.Response.StatusCode = (int)HttpStatusCode.BadRequest;
-                    await context.Response.WriteAsJsonAsync(new { error = ex.Message, statusCode = 400 });
-                    break;
+                TokenExpiredException ex => new ErrorResponse(ex.Message, 401, type: "TokenExpired"),
 
-                case InvalidEmailException ex:
-                    context.Response.StatusCode = (int)HttpStatusCode.BadRequest;
-                    await context.Response.WriteAsJsonAsync(new { error = ex.Message, statusCode = 400 });
-                    break;
+                AccessDeniedException ex => new ErrorResponse(ex.Message, 403, type: "AccessDenied"),
+                ProjectAccessDeniedException ex => new ErrorResponse(ex.Message, 403, type: "ProjectAccessDenied"),
+                NoCuratorProjectException ex => new ErrorResponse(ex.Message, 403, type: "NoCuratorProject"),
 
-                case InvalidPasswordException ex:
-                    context.Response.StatusCode = (int)HttpStatusCode.BadRequest;
-                    await context.Response.WriteAsJsonAsync(new { error = ex.Message, statusCode = 400 });
-                    break;
+                UserNotFoundException ex => new ErrorResponse(ex.Message, 404, type: "UserNotFound"),
+                ProjectNotFoundException ex => new ErrorResponse(ex.Message, 404, type: "ProjectNotFound"),
+                StudentNotFoundException ex => new ErrorResponse(ex.Message, 404, type: "StudentNotFound"),
+                NoProjectsForTeacherException ex => new ErrorResponse(ex.Message, 404, type: "NoProjectsForTeacher"),
 
-                case InvalidStudentDataException ex:
-                    context.Response.StatusCode = (int)HttpStatusCode.BadRequest;
-                    await context.Response.WriteAsJsonAsync(new { error = ex.Message, statusCode = 400 });
-                    break;
-                case InvalidOperationException ex:
-                    context.Response.StatusCode = (int)HttpStatusCode.BadRequest;
-                    await context.Response.WriteAsJsonAsync(new { error = ex.Message, statusCode = 400 });
-                    break;
-                case UserNotFoundException ex:
-                    context.Response.StatusCode = (int)HttpStatusCode.NotFound;
-                    await context.Response.WriteAsJsonAsync(new { error = ex.Message, statusCode = 404 });
-                    break;
+                ActiveProjectExistsException ex => new ErrorResponse(ex.Message, 409, type: "ActiveProjectExists"),
 
-                case ArgumentException ex:
-                    context.Response.StatusCode = (int)HttpStatusCode.BadRequest;
-                    await context.Response.WriteAsJsonAsync(new { error = ex.Message, statusCode = 400 });
-                    break;
-                case TeacherHasStudentsException ex:
-                    context.Response.StatusCode = (int)HttpStatusCode.BadRequest;
-                    await context.Response.WriteAsJsonAsync(new { error = ex.Message, statusCode = 400 });
-                    break;
+                TeacherHasStudentsException ex => new ErrorResponse(ex.Message, 400, type: "TeacherHasStudents"),
 
-                case TokenExpiredException ex:
-                    context.Response.StatusCode = (int)HttpStatusCode.Unauthorized;
-                    await context.Response.WriteAsJsonAsync(new { error = ex.Message, statusCode = 401 });
-                    break;
-                case ProjectNotFoundException ex:
-                    context.Response.StatusCode = (int)HttpStatusCode.NotFound;
-                    await context.Response.WriteAsJsonAsync(new { error = ex.Message, statusCode = 404 });
-                    break;
+                _ => new ErrorResponse("Произошла внутренняя ошибка сервера.", 500, detail: exception.Message, type: "InternalServerError")
+            };
 
-                case StudentNotFoundException ex:
-                    context.Response.StatusCode = (int)HttpStatusCode.NotFound;
-                    await context.Response.WriteAsJsonAsync(new { error = ex.Message, statusCode = 404 });
-                    break;
-                case ActiveProjectExistsException ex:
-                    context.Response.StatusCode = (int)HttpStatusCode.Conflict; 
-                    await context.Response.WriteAsJsonAsync(new { error = ex.Message, statusCode = 409 });
-                    break;
-                case FileValidationException ex:
-                    context.Response.StatusCode = (int)HttpStatusCode.BadRequest;
-                    await context.Response.WriteAsJsonAsync(new { error = ex.Message, statusCode = 400 });
-                    break;
-
-                case ProjectAccessDeniedException ex:
-                    context.Response.StatusCode = (int)HttpStatusCode.Forbidden;
-                    await context.Response.WriteAsJsonAsync(new { error = ex.Message, statusCode = 403 });
-                    break;
-
-
-                default:
-                    context.Response.StatusCode = (int)HttpStatusCode.InternalServerError;
-                    await context.Response.WriteAsJsonAsync(new { error = "Произошла внутренняя ошибка сервера.", statusCode = 500 });
-                    break;
-            }
+            context.Response.StatusCode = response.StatusCode;
+            await context.Response.WriteAsJsonAsync(response);
         }
     }
 }

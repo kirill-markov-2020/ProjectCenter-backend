@@ -8,5 +8,7 @@ namespace ProjectCenter.Application.Interfaces
         Task<List<TypeProject>> GetTypesAsync();
         Task<List<Subject>> GetSubjectsAsync();
         Task<List<Group>> GetGroupsAsync();
+        Task<TypeProject?> GetTypeByIdAsync(int id);
+        Task<Subject?> GetSubjectByIdAsync(int id);
     }
 }

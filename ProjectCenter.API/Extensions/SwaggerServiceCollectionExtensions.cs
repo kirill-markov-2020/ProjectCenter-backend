@@ -35,7 +35,7 @@ namespace ProjectCenter.API.Extensions
                     }
                 });
 
-                // Опционально: можно добавить описание, что префикс не нужен
+       
                 c.OperationFilter<SwaggerAuthOperationFilter>();
             });
 
@@ -43,7 +43,7 @@ namespace ProjectCenter.API.Extensions
         }
     }
 
-    // Дополнительный класс для кастомизации отображения
+
     public class SwaggerAuthOperationFilter : IOperationFilter
     {
         public void Apply(OpenApiOperation operation, OperationFilterContext context)
