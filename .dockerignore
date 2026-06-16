@@ -1,0 +1,8 @@
+bin/
+obj/
+.git/
+.gitattributes
+.gitignore
+.vs/
+*.md
+appsettings.Development.json
