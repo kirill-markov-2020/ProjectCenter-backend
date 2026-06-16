@@ -1,5 +1,7 @@
-﻿using ProjectCenter.API.Extensions;
+﻿using Microsoft.EntityFrameworkCore;
+using ProjectCenter.API.Extensions;
 using ProjectCenter.API.Middleware;
+using ProjectCenter.Infrastructure.Persistence.Contexts;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -11,6 +13,12 @@ builder.Services.AddSwaggerWithBearer();
 builder.Services.AddBackgroundServices();
 var app = builder.Build();
 
+using (var scope = app.Services.CreateScope())
+{
+    var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+    db.Database.Migrate();
+}
+
 app.UseMiddleware<ExceptionHandlingMiddleware>();
 
 if (app.Environment.IsDevelopment())
@@ -19,7 +27,7 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI();
 }
 
-app.UseCors();  
+app.UseCors();
 app.UseAuthentication();
 app.UseAuthorization();
 
