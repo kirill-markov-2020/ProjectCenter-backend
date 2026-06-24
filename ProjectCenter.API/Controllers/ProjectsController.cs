@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Http;
 using ProjectCenter.Application.DTOs.Project;
 using ProjectCenter.Application.DTOs;
 using ProjectCenter.Application.Interfaces;
@@ -93,6 +94,7 @@ namespace ProjectCenter.Api.Controllers
         [HttpPut("my/{id}")]
         [Authorize(Roles = "Student")]
         [Consumes("multipart/form-data")]
+        [RequestSizeLimit(68_157_440)]
         public async Task<IActionResult> UpdateMyProject(int id, [FromForm] UpdateStudentProjectRequestDto dto)
         {
             if (!HttpContext.Items.ContainsKey("UserId"))
@@ -104,7 +106,7 @@ namespace ProjectCenter.Api.Controllers
             return Ok(updatedProject);
         }
         [HttpDelete("{id}")]
-        
+
         public async Task<IActionResult> DeleteProject(int id)
         {
             await _projectService.DeleteProjectAsync(id);

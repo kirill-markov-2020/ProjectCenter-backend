@@ -122,7 +122,7 @@ namespace ProjectCenter.Infrastructure.Migrations
                     IsAdmin = table.Column<bool>(type: "bit", nullable: false),
                     Phone = table.Column<string>(type: "nvarchar(20)", maxLength: 20, nullable: false),
                     Email = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: false),
-                    Photo = table.Column<string>(type: "nvarchar(150)", maxLength: 150, nullable: true)
+                    Photo = table.Column<string>(type: "nvarchar(1500)", maxLength: 1500, nullable: true)
                 },
                 constraints: table =>
                 {
